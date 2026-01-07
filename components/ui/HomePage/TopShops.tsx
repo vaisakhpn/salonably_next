@@ -9,7 +9,7 @@ const TopShops = () => {
         Simply browse through our extensive list of salon shops.
       </p>
       <div className="w-full flex overflow-x-auto gap-4 pt-5 px-3 sm:px-0 sm:grid sm:grid-cols-auto sm:gap-y-6 sm:overflow-visible">
-        <div className="min-w-[200px] border border-blue-200 rounded-xl overflow-hidden cursor-pointer hover:translate-y-[-10px] transition-all duration-500">
+        <div className="w-60 border border-blue-200 rounded-xl overflow-hidden cursor-pointer hover:translate-y-2.5 transition-all duration-500">
           <Image
             className="bg-blue-50 w-full h-40 object-cover rounded-t-xl"
             src={slider_img}

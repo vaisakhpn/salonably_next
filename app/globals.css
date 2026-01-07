@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+@theme inline {
+  --font-main: var(--font-outfit);
+}
+
+::-webkit-scrollbar {
+  @apply hidden;
+}
