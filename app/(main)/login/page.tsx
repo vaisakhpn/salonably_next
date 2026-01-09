@@ -1,5 +1,4 @@
 import Login from "@/components/ui/Login";
-
 const page = () => {
   return (
     <div>
