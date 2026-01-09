@@ -1,4 +1,4 @@
-//import SearchBox from "../SearchBox";
+import SearchBox from "./SearchBox";
 
 import dropdown from "../../assets/dropdown_icon.svg";
 import salonably from "../../assets/salonably.png";
@@ -13,9 +13,9 @@ const Navbar = () => {
         <Link className="text-black font-bold text-xl sm:text-3xl" href="/">
           <Image src={salonably} className="sm:w-20 w-12 rounded-full" alt="" />
         </Link>
-        {/* <div className="flex items-center  text-sm">
-          <SearchBox label="Glam up,Kochi.." />
-        </div> */}
+        <div className="flex-1 max-w-md mx-4  ">
+          <SearchBox />
+        </div>
         <div>
           {/* <div className="flex items-center gap-2 cursor-pointer group relative">
             <Image

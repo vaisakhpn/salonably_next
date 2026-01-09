@@ -2,9 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import slider_img from "../../../assets/hero.png";
 
-import { shops } from "@/lib/data";
+import { shops as allShopsData } from "@/lib/data"; // Import type if we had one, or keeping for fallback? Actually better to define type here or import it.
 
-const AllShops = () => {
+type Shop = typeof allShopsData[0];
+
+interface AllShopsProps {
+  shops?: Shop[];
+}
+
+const AllShops: React.FC<AllShopsProps> = ({ shops = allShopsData }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* ---------- Header ---------- */}
