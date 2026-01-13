@@ -1,185 +1,103 @@
 "use client";
 
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import slider_img from "../../../assets/hero.png";
+import Link from "next/link";
 
-type Booking = {
-  id: string;
-  slotDate: string;
-  slotTime: string;
-  cancelled: boolean;
-  isCompleted: boolean;
+interface Booking {
+  _id: string;
   shopData: {
     name: string;
-    image: string | any;
     address: {
       line1: string;
       line2: string;
     };
+    image: string;
   };
-};
+  slotDate: string;
+  slotTime: string;
+  amount: number;
+  status: string;
+}
 
-const months = [
-  "",
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
+const MyBookings = () => {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const slotDateFormat = (slotDate: string) => {
-  const dateArray = slotDate.split("_");
-  return `${dateArray[0]} ${months[Number(dateArray[1])]} ${dateArray[2]}`;
-};
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const res = await fetch("/api/bookings");
+        if (res.ok) {
+          const data = await res.json();
+          setBookings(data.bookings);
+        }
+      } catch (error) {
+        console.error("Failed to fetch bookings", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-// 🔹 Dummy bookings data (UI only)
-const initialBookings: Booking[] = [
-  {
-    id: "1",
-    slotDate: "10_1_2026",
-    slotTime: "10:30 AM",
-    cancelled: false,
-    isCompleted: false,
-    shopData: {
-      name: "Style Studio",
-      image: slider_img,
-      address: {
-        line1: "MG Road",
-        line2: "Kochi",
-      },
-    },
-  },
-  {
-    id: "2",
-    slotDate: "05_1_2026",
-    slotTime: "01:00 PM",
-    cancelled: true,
-    isCompleted: false,
-    shopData: {
-      name: "Urban Cuts",
-      image: slider_img,
-      address: {
-        line1: "Kaloor",
-        line2: "Kochi",
-      },
-    },
-  },
-  {
-    id: "3",
-    slotDate: "01_1_2026",
-    slotTime: "11:00 AM",
-    cancelled: false,
-    isCompleted: true,
-    shopData: {
-      name: "Elite Saloon",
-      image: slider_img,
-      address: {
-        line1: "Edappally",
-        line2: "Kochi",
-      },
-    },
-  },
-];
+    fetchBookings();
+  }, []);
 
-const MyBookings: React.FC = () => {
-  const [bookings, setBookings] = useState<Booking[]>(initialBookings);
+  if (loading) {
+    return <div className="p-8 text-center">Loading bookings...</div>;
+  }
 
-  const cancelBooking = (id: string) => {
-    setBookings((prev) =>
-      prev.map((booking) =>
-        booking.id === id
-          ? { ...booking, cancelled: true }
-          : booking
-      )
+  if (bookings.length === 0) {
+    return (
+      <div className="p-8 text-center min-h-[50vh] flex flex-col items-center justify-center">
+        <h2 className="text-xl font-medium mb-4">No bookings found</h2>
+        <Link
+          href="/"
+          className="bg-blue-500 text-white px-6 py-2 rounded-full"
+        >
+          Find a Salon
+        </Link>
+      </div>
     );
-  };
+  }
 
   return (
-    <div className="max-w-5xl mx-auto px-4">
-      <p className="pb-3 mt-12 font-medium text-zinc-700 border-b">
-        My Bookings
-      </p>
-
-      <div>
-        {bookings.slice(0, 5).map((item) => (
+    <div className="max-w-4xl mx-auto p-4 py-8">
+      <h1 className="text-2xl font-bold mb-6">My Bookings</h1>
+      <div className="flex flex-col gap-4">
+        {bookings.map((booking) => (
           <div
-            key={item.id}
-            className="grid grid-cols-[1fr_2fr] gap-4 sm:flex sm:gap-6 py-4 border-b"
+            key={booking._id}
+            className="border rounded-lg p-4 flex flex-col sm:flex-row gap-4 shadow-sm bg-white"
           >
-            {/* Shop Image */}
-            <div>
-              <Image
-                src={item.shopData.image}
-                alt="shop"
-                width={130}
-                height={100}
-                className="bg-indigo-50 rounded"
-              />
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold">
+                {booking.shopData?.name || "Salon"}
+              </h2>
+              <p className="text-gray-600 text-sm">
+                {booking.shopData?.address?.line1}
+              </p>
+              <div className="mt-2 flex gap-4 text-sm font-medium">
+                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded">
+                  {booking.slotDate}
+                </span>
+                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded">
+                  {booking.slotTime}
+                </span>
+              </div>
             </div>
-
-            {/* Booking Details */}
-            <div className="flex-1 text-sm text-zinc-600">
-              <p className="text-neutral-800 font-semibold">
-                {item.shopData.name}
-              </p>
-
-              <p className="text-zinc-700 font-medium mt-1">
-                Address:
-              </p>
-              <p className="text-xs">{item.shopData.address.line1}</p>
-              <p className="text-xs">{item.shopData.address.line2}</p>
-
-              <p className="text-xs mt-1">
-                <span className="text-sm text-neutral-700 font-medium">
-                  Date & Time :
-                </span>{" "}
-                {slotDateFormat(item.slotDate)} | {item.slotTime}
-              </p>
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-col gap-2 justify-end">
-              {!item.cancelled && !item.isCompleted && (
-                <button
-                  disabled
-                  className="text-sm text-stone-500 sm:min-w-48 py-2 border disabled:bg-gray-200 disabled:text-gray-400"
-                >
-                  Pay Online
-                </button>
-              )}
-
-              {!item.cancelled && !item.isCompleted && (
-                <button
-                  onClick={() => cancelBooking(item.id)}
-                  className="text-sm text-stone-500 sm:min-w-48 py-2 border hover:bg-red-500 hover:text-white transition"
-                >
-                  Cancel Booking
-                </button>
-              )}
-
-              {item.cancelled && !item.isCompleted && (
-                <button className="sm:min-w-48 py-2 border border-red-500 rounded text-red-500">
-                  Booking Cancelled
-                </button>
-              )}
-
-              {item.isCompleted && (
-                <button
-                  disabled
-                  className="text-green-500 sm:min-w-48 py-2 border border-green-500 rounded"
-                >
-                  Completed
-                </button>
-              )}
+            <div className="flex flex-col items-end justify-between">
+              <span className="font-semibold text-lg">₹{booking.amount}</span>
+              <span
+                className={`px-3 py-1 rounded text-sm capitalize ${
+                  booking.status === "booked"
+                    ? "bg-green-100 text-green-800"
+                    : booking.status === "cancelled"
+                    ? "bg-red-100 text-red-800"
+                    : "bg-gray-100"
+                }`}
+              >
+                {booking.status}
+              </span>
             </div>
           </div>
         ))}

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -21,8 +23,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${outfit.variable} font-main`}>
-        <div className="mx-4 sm:mx-[10%]">{children}</div>
+      <body
+        className={`${outfit.variable} font-main`}
+        suppressHydrationWarning={true}
+      >
+        <div>
+          <ToastContainer />
+          {children}
+        </div>
       </body>
     </html>
   );

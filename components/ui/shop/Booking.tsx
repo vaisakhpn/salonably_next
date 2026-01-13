@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const daysOfWeek = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
@@ -26,6 +27,49 @@ const Booking: React.FC<BookingProps> = ({ shopId }) => {
     date: string;
     time: string;
   }>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleBooking = async () => {
+    if (!slotTime) {
+      alert("Please select a time slot");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shopId,
+          slotDate: shopSlots[slotIndex].date,
+          slotTime,
+          shopData: shopInfo,
+          amount: shopInfo.price,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 401) {
+          alert("Please login to book a slot");
+          router.push("/login");
+          return;
+        }
+        throw new Error(data.message || "Booking failed");
+      }
+
+      setBookingDetails({
+        date: shopSlots[slotIndex].date,
+        time: slotTime,
+      });
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 🔹 Dummy slots (UI only)
   const shopSlots = [
@@ -135,15 +179,11 @@ const Booking: React.FC<BookingProps> = ({ shopId }) => {
         </div>
 
         <button
-          onClick={() =>
-            setBookingDetails({
-              date: shopSlots[slotIndex].date,
-              time: slotTime,
-            })
-          }
-          className="bg-blue-500 text-white px-12 py-3 rounded-full mt-6"
+          onClick={handleBooking}
+          disabled={loading}
+          className="cursor-pointer bg-blue-500 text-white px-12 py-3 rounded-full mt-6 disabled:bg-blue-300"
         >
-          Book the slot
+          {loading ? "Booking..." : "Book the slot"}
         </button>
       </div>
 
@@ -167,12 +207,23 @@ const Booking: React.FC<BookingProps> = ({ shopId }) => {
               {guestName} ({guestEmail})
             </p>
 
-            <button
-              onClick={() => setBookingDetails(null)}
-              className="mt-6 bg-gray-300 px-6 py-2 rounded"
-            >
-              Close
-            </button>
+            <div className="flex flex-col gap-2 mt-6">
+              <button
+                onClick={() => {
+                  setBookingDetails(null);
+                  router.push("/profile/my-bookings");
+                }}
+                className="cursor-pointer bg-blue-500 text-white px-6 py-2 rounded"
+              >
+                Go to My Bookings
+              </button>
+              <button
+                onClick={() => setBookingDetails(null)}
+                className="cursor-pointer bg-gray-300 px-6 py-2 rounded"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
