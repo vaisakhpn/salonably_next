@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import dbConnect from "../../../../server/db/mongodb";
-import ShopModel from "../../../../server/models/Shop";
+import dbConnect from "@/server/db/mongodb";
+import ShopModel from "@/server/models/Shop";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -27,9 +28,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // In a real app, hash and compare passwords.
-    // Assuming simple comparison for now based on previous code.
-    if (shop.password !== password) {
+    // Hash and compare passwords
+    const isMatch = await bcrypt.compare(password, shop.password);
+
+    if (!isMatch) {
       return NextResponse.json(
         { message: "Invalid credentials" },
         { status: 401 }

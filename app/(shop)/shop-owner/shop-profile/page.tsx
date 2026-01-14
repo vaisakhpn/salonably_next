@@ -13,29 +13,29 @@ const page = async () => {
   const token = cookieStore.get("shop_token");
 
   if (!token) {
-    redirect("/admin/login");
+    redirect("/shop-owner");
   }
 
+  // Verify token and get shopId
+  // Note: We need to handle invalid tokens (e.g. expired) which jwt.verify throws on
   let shopId;
   try {
-    const decoded: any = jwt.verify(token.value, JWT_SECRET);
+    const decoded = jwt.verify(token.value, JWT_SECRET) as any;
     shopId = decoded.shopId;
-  } catch (e) {
-    redirect("/admin/login");
+  } catch (error) {
+    redirect("/shop-owner");
   }
 
   await dbConnect();
 
-  const shopData = await ShopModel.findById(shopId).select("-password");
+  const shop = await ShopModel.findById(shopId);
 
-  if (!shopData) {
-    // Handle case where shop is not found
-    return <div>Shop not found</div>;
-  }
+  // Serialize Mongoose document
+  const shopData = JSON.parse(JSON.stringify(shop));
 
   return (
     <div>
-      <ShopProfile shopData={JSON.parse(JSON.stringify(shopData))} />
+      <ShopProfile shopData={shopData} />
     </div>
   );
 };

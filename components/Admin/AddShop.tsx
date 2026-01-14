@@ -1,31 +1,34 @@
 "use client";
 
-import React, { useState } from "react";
 import { assets } from "@/assets/assets";
+import Image from "next/image";
+import React, { useState, ChangeEvent, FormEvent } from "react";
 import { toast } from "react-toastify";
 
-const AddShop = () => {
+const AddShop: React.FC = () => {
   const [shopImg, setShopImg] = useState<File | null>(null);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [fees, setFees] = useState("");
-  const [about, setAbout] = useState("");
-  const [address1, setAddress1] = useState("");
-  const [address2, setAddress2] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [fees, setFees] = useState<string>("");
+  const [about, setAbout] = useState<string>("");
+  const [address1, setAddress1] = useState<string>("");
+  const [address2, setAddress2] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const onSubmitHandler = async (event: React.FormEvent) => {
+  const onSubmitHandler = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setLoading(false);
+    setLoading(true);
+
     try {
       if (!shopImg) {
-        return toast.error("Image Not Selected");
+        toast.error("Please upload a shop image");
+        setLoading(false);
+        return;
       }
 
       const formData = new FormData();
-
       formData.append("image", shopImg);
       formData.append("name", name);
       formData.append("email", email);
@@ -38,19 +41,16 @@ const AddShop = () => {
         JSON.stringify({ line1: address1, line2: address2 })
       );
 
-      setLoading(true);
-
-      const response = await fetch("/api/admin/add-shop", {
+      const response = await fetch("/api/shop/add", {
         method: "POST",
-        body: formData, // fetch handles multipart/form-data boundary automatically
-        // No headers needed for FormData, and cookie is sent automatically for auth
+        body: formData,
       });
 
       const data = await response.json();
 
-      setLoading(false);
       if (response.ok) {
         toast.success(data.message);
+        // Reset form fields
         setShopImg(null);
         setName("");
         setEmail("");
@@ -64,38 +64,47 @@ const AddShop = () => {
         toast.error(data.message);
       }
     } catch (error: any) {
-      toast.error(error.message || "Something went wrong");
-      console.log(error);
+      console.error("Add shop error:", error);
+      toast.error("Failed to add shop. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setShopImg(e.target.files[0]);
     }
   };
 
   return (
     <form onSubmit={onSubmitHandler} className="m-5 w-full">
       <p className="mb-3 text-lg font-medium">Add Shop</p>
-      <div className="bg-white px-8 py-8 border rounded w-full max-w-4xl max-h-[80vh] overflow-y-scroll ">
+
+      <div className="bg-white px-8 py-8 border rounded w-full max-w-4xl max-h-[80vh] overflow-y-scroll scrollbar-hide">
         <div className="flex items-center gap-4 mb-8 text-gray-500">
           <label htmlFor="doc-img">
-            <img
-              className="w-16 bg-gray-100 rounded-full cursor-pointer"
+            <Image
               src={shopImg ? URL.createObjectURL(shopImg) : assets.upload_area}
-              alt="shop"
+              className="w-16 h-16 bg-gray-100 rounded-full cursor-pointer object-cover"
+              width={64}
+              height={64}
+              alt="Shop Preview"
             />
           </label>
           <input
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                setShopImg(e.target.files[0]);
-              }
-            }}
+            onChange={handleImageChange}
             type="file"
             id="doc-img"
             hidden
+            accept="image/*"
           />
           <p>
             Upload shop <br />
             picture
           </p>
         </div>
+
         <div className="flex flex-col lg:flex-row items-start gap-10 text-gray-600">
           <div className="w-full lg:flex-1 flex flex-col gap-4">
             <div className="flex-1 flex flex-col gap-1">
@@ -103,87 +112,92 @@ const AddShop = () => {
               <input
                 onChange={(e) => setName(e.target.value)}
                 value={name}
-                className="border rounded px-3 py-2"
+                className="border rounded px-3 py-2 outline-blue-500"
                 type="text"
                 placeholder="Name"
                 required
               />
             </div>
+
             <div className="flex-1 flex flex-col gap-1">
-              <p>Shop email</p>
+              <p>Shop Email</p>
               <input
                 onChange={(e) => setEmail(e.target.value)}
                 value={email}
-                className="border rounded px-3 py-2"
+                className="border rounded px-3 py-2 outline-blue-500"
                 type="email"
-                placeholder="email"
+                placeholder="Email"
                 required
               />
             </div>
+
             <div className="flex-1 flex flex-col gap-1">
-              <p>Phone Number </p>
+              <p>Phone Number</p>
               <input
-                minLength={10}
                 onChange={(e) => setPhone(e.target.value)}
                 value={phone}
-                className="border rounded px-3 py-2"
-                type="number"
-                placeholder="phone number"
+                className="border rounded px-3 py-2 outline-blue-500"
+                type="number" // basic HTML validation
+                placeholder="Phone number"
                 required
               />
             </div>
+
             <div className="flex-1 flex flex-col gap-1">
-              <p>Shop password</p>
+              <p>Shop Password</p>
               <input
                 onChange={(e) => setPassword(e.target.value)}
                 value={password}
-                className="border rounded px-3 py-2"
+                className="border rounded px-3 py-2 outline-blue-500"
                 type="password"
-                placeholder="password"
+                placeholder="Password"
                 required
               />
             </div>
           </div>
+
           <div className="w-full lg:flex-1 flex flex-col gap-4">
             <div className="flex-1 flex flex-col gap-1">
-              <p>Fees</p>
+              <p>Service Fees</p>
               <input
                 onChange={(e) => setFees(e.target.value)}
                 value={fees}
-                className="border rounded px-3 py-2"
+                className="border rounded px-3 py-2 outline-blue-500"
                 type="number"
-                placeholder="fees"
+                placeholder="Fees"
                 required
               />
             </div>
+
             <div className="flex-1 flex flex-col gap-1">
               <p>Address</p>
               <input
                 onChange={(e) => setAddress1(e.target.value)}
                 value={address1}
-                className="border rounded px-3 py-2"
+                className="border rounded px-3 py-2 outline-blue-500 mb-2"
                 type="text"
-                placeholder="address 1"
+                placeholder="Address Line 1"
                 required
               />
               <input
                 onChange={(e) => setAddress2(e.target.value)}
                 value={address2}
-                className="border rounded px-3 py-2"
+                className="border rounded px-3 py-2 outline-blue-500"
                 type="text"
-                placeholder="address 2"
+                placeholder="Address Line 2"
                 required
               />
             </div>
           </div>
         </div>
+
         <div>
           <p className="mt-4 mb-2">About Shop</p>
           <textarea
             onChange={(e) => setAbout(e.target.value)}
             value={about}
-            className="w-full px-4 pt-2 border rounded"
-            placeholder="write about shop"
+            className="w-full px-4 pt-2 border rounded outline-blue-500"
+            placeholder="Write about the shop"
             rows={5}
             required
           />
@@ -192,9 +206,9 @@ const AddShop = () => {
         <button
           type="submit"
           disabled={loading}
-          className="bg-blue-500 px-10 py-3 mt-4 rounded-full text-white disabled:opacity-80 hover:opacity-95 "
+          className="bg-blue-500 cursor-pointer px-10 py-3 mt-4 rounded-full text-white disabled:opacity-70 hover:bg-blue-600 transition-all font-medium"
         >
-          {loading ? "Adding.." : "Add shop"}
+          {loading ? "Adding Shop..." : "Add Shop"}
         </button>
       </div>
     </form>

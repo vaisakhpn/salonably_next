@@ -13,6 +13,7 @@ import earning_icon from "./earning_icon.svg";
 import customers_icon from "./customers_icon.svg";
 import allShop from "./allshop.svg";
 import salonably from "./salonably.png";
+import info_icon from "./info_icon.svg";
 
 export const assets = {
   salonably,
@@ -30,4 +31,5 @@ export const assets = {
   appointments_icon,
   earning_icon,
   allShop,
+  info_icon, // Add export
 };

@@ -10,14 +10,14 @@ const Navbar = () => {
 
   const logoutHandler = async () => {
     try {
-      const response = await fetch("/api/admin/logout", {
+      const response = await fetch("/api/shop/logout", {
         method: "POST",
       });
       const data = await response.json();
 
       if (response.ok) {
         toast.success(data.message);
-        router.push("/admin"); // Will redirect to login view
+        router.push("/shop-owner"); // Will redirect to login view
         router.refresh();
       } else {
         toast.error(data.message);
@@ -36,7 +36,7 @@ const Navbar = () => {
           alt="logo"
         />
         <p className="border px-2.5 py-0.5 rounded-full border-gray-500 text-gray-600">
-          "Admin"
+          "Shop Panel"
         </p>
       </div>
       <button

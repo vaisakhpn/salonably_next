@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
 const LoginUser = () => {
-  const [state, setState] = useState("Shop");
+  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,8 +15,7 @@ const LoginUser = () => {
     event.preventDefault();
     setLoading(true);
     try {
-      const endpoint =
-        state === "Admin" ? "/api/admin/login" : "/api/shop/login";
+      const endpoint = "/api/admin/login";
 
       const response = await fetch(endpoint, {
         method: "POST",
@@ -28,12 +27,11 @@ const LoginUser = () => {
 
       if (response.ok) {
         toast.success(data.message);
-        // Cookies are set by the server, just redirect.
-        if (state === "Admin") {
-          router.push("/admin");
-        } else {
-          router.push("/shop");
-        }
+        // Cookies are set by the server.
+       
+          // Refresh the page to allow the server component to re-verify the cookie and render the dashboard
+          router.refresh();
+     
       } else {
         toast.error(data.message);
       }
@@ -49,7 +47,7 @@ const LoginUser = () => {
     <form onSubmit={onSubmitHandler} className="min-h-[80vh] flex items-center">
       <div className="flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-[#5E5E5E] text-sm shadow-lg">
         <p className="text-2xl gap-3 font-semibold m-auto">
-          <span className="text-blue-500"> {state} </span>
+          <span className="text-blue-500"> Admin </span>
           Login
         </p>
         <div className="w-full">
@@ -74,31 +72,11 @@ const LoginUser = () => {
         </div>
         <button
           disabled={loading}
-          className="bg-blue-500 text-white w-full py-2 rounded-md text-base hover:bg-blue-600 transition-colors disabled:opacity-70"
+          className="bg-blue-500 cursor-pointer text-white w-full py-2 rounded-md text-base hover:bg-blue-600 transition-colors disabled:opacity-70"
         >
           {loading ? "Logging in..." : "Login"}
         </button>
-        {state === "Admin" ? (
-          <p>
-            Shop Login?
-            <span
-              className="text-blue-500 underline cursor-pointer ml-1"
-              onClick={() => setState("Shop")}
-            >
-              Click here
-            </span>
-          </p>
-        ) : (
-          <p>
-            Admin Login?
-            <span
-              className="text-blue-500 underline cursor-pointer ml-1"
-              onClick={() => setState("Admin")}
-            >
-              Click here
-            </span>
-          </p>
-        )}
+       
       </div>
     </form>
   );

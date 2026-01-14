@@ -2,13 +2,31 @@ import { NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import dbConnect from "@/server/db/mongodb";
 import ShopModel from "@/server/models/Shop";
+import bcrypt from "bcryptjs";
 
 // Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+const cloudinaryConfig = {
+  cloud_name: process.env.CLOUDINARY_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+  api_secret: process.env.CLOUDINARY_SECRET_KEY,
+};
+
+if (
+  !cloudinaryConfig.cloud_name ||
+  !cloudinaryConfig.api_key ||
+  !cloudinaryConfig.api_secret
+) {
+  console.error("Cloudinary config missing:", {
+    cloud_name: !!cloudinaryConfig.cloud_name,
+    api_key: !!cloudinaryConfig.api_key,
+    api_secret: !!cloudinaryConfig.api_secret,
+  });
+  throw new Error(
+    "Cloudinary configuration is missing. Please check your .env.local file."
+  );
+}
+
+cloudinary.config(cloudinaryConfig);
 
 export async function POST(req: Request) {
   try {
@@ -32,6 +50,15 @@ export async function POST(req: Request) {
 
     await dbConnect();
 
+    // Check if shop already exists
+    const existingShop = await ShopModel.findOne({ email });
+    if (existingShop) {
+      return NextResponse.json(
+        { message: "Shop with this email already exists" },
+        { status: 400 }
+      );
+    }
+
     // Upload image to Cloudinary
     const arrayBuffer = await imageFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -52,11 +79,15 @@ export async function POST(req: Request) {
 
     const imageUrl = uploadResponse.secure_url;
 
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     // Create Shop
     const newShop = await ShopModel.create({
       name,
       email,
-      password, // In production, hash this!
+      password: hashedPassword,
       image: imageUrl,
       about,
       fees: Number(fees),
@@ -66,7 +97,19 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json(
-      { message: "Shop added successfully", shop: newShop },
+      {
+        message: "Shop added successfully",
+        shop: {
+          id: newShop._id,
+          name: newShop.name,
+          email: newShop.email,
+          image: newShop.image,
+          about: newShop.about,
+          fees: newShop.fees,
+          address: newShop.address,
+          phone: newShop.phone,
+        },
+      },
       { status: 201 }
     );
   } catch (error) {

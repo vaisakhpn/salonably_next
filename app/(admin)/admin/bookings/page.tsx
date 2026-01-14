@@ -10,7 +10,7 @@ const page = async () => {
   const token = cookieStore.get("admin_token");
 
   if (!token) {
-    redirect("/admin/login");
+    redirect("/admin");
   }
 
   await dbConnect();

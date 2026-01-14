@@ -1,4 +1,5 @@
 import Dashboard from "@/components/Admin/Dashboard";
+import LoginUser from "@/components/Admin/LoginPage";
 import React from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -12,7 +13,7 @@ const page = async () => {
   const token = cookieStore.get("admin_token");
 
   if (!token) {
-    redirect("/admin/login");
+    return <LoginUser />;
   }
 
   await dbConnect();

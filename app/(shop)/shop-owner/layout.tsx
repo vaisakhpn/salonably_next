@@ -1,11 +1,11 @@
-import Navbar from "@/components/Admin/Navbar";
-import Sidebar from "@/components/Admin/Sidebar";
+import Navbar from "@/components/Shop/Navbar";
+import Sidebar from "@/components/Shop/Sidebar";
 import React from "react";
 import { cookies } from "next/headers";
 
 const layout = async ({ children }: { children: React.ReactNode }) => {
   const cookieStore = await cookies();
-  const token = cookieStore.get("admin_token");
+  const token = cookieStore.get("shop_token");
 
   if (!token) {
     return <>{children}</>;
