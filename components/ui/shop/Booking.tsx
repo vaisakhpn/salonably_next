@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 const daysOfWeek = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
 import { shops } from "@/lib/data";
-import slider_img from "../../../assets/hero.png"; // Fallback image
+import slider_img from "@/assets/hero.png"; // Fallback image
 
 interface BookingProps {
   shopId: string;

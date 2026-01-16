@@ -1,5 +1,6 @@
 import AllShops from "@/components/ui/shop/AllShops";
-import { shops } from "@/lib/data";
+import dbConnect from "@/server/db/mongodb";
+import ShopModel from "@/server/models/Shop";
 import React from "react";
 
 interface PageProps {
@@ -10,20 +11,33 @@ interface PageProps {
 
 const page = async ({ searchParams }: PageProps) => {
   const { query } = await searchParams;
-  
-  let filteredShops = shops;
-  
+
+  await dbConnect();
+
+  let filter: any = { available: true };
+
   if (query) {
-    const lowerQuery = query.toLowerCase();
-    filteredShops = shops.filter((shop) => {
-      const shopData = `${shop.name} ${shop.location}`.toLowerCase();
-      return shopData.includes(lowerQuery);
-    });
+    // Simple case-insensitive regex search on name or address line 1
+    // Note: MongoDB regex might be slow on large datasets, but fine for now.
+    const regex = new RegExp(query, "i");
+    filter = {
+      ...filter,
+      $or: [
+        { name: regex },
+        { "address.line1": regex },
+        { "address.line2": regex },
+      ],
+    };
   }
+
+  const shops = await ShopModel.find(filter).lean();
+
+  // Serialize for Client Component
+  const serializedShops = JSON.parse(JSON.stringify(shops));
 
   return (
     <div>
-      <AllShops shops={filteredShops} />
+      <AllShops shops={serializedShops} />
     </div>
   );
 };

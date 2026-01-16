@@ -1,54 +1,74 @@
 import Image from "next/image";
 import Link from "next/link";
-import slider_img from "../../../assets/hero.png";
+import React from "react";
 
-import { shops as allShopsData } from "@/lib/data"; // Import type if we had one, or keeping for fallback? Actually better to define type here or import it.
-
-type Shop = typeof allShopsData[0];
-
-interface AllShopsProps {
-  shops?: Shop[];
+interface Address {
+  line1: string;
+  line2: string;
 }
 
-const AllShops: React.FC<AllShopsProps> = ({ shops = allShopsData }) => {
+interface Shop {
+  _id: string;
+  name: string;
+  image: string;
+  fees: number;
+  address: Address;
+  location?: string; // Backwards compatibility if needed, but we'll use address
+  price?: number; // Backwards compatibility
+}
+
+interface AllShopsProps {
+  shops: Shop[];
+}
+
+const AllShops: React.FC<AllShopsProps> = ({ shops }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* ---------- Header ---------- */}
       <div className="mb-8">
-        <h1 className="text-3xl font-semibold text-gray-800">Nearby Saloons</h1>
+        <h1 className="text-3xl font-semibold text-gray-800">Salons</h1>
         <p className="text-gray-500 mt-1">
           Book your preferred time slot instantly
         </p>
       </div>
 
       {/* ---------- Shop Grid ---------- */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {shops.map((shop) => (
-          <Link
-            key={shop.id}
-            href={`/shops/${shop.id}`}
-            className="group border rounded-xl overflow-hidden bg-white hover:shadow-lg transition"
-          >
-            <Image
-              src={slider_img}
-              alt={shop.name}
-              width={400}
-              height={250}
-              className="w-full h-48 object-cover group-hover:scale-105 transition"
-            />
+      {shops.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {shops.map((shop) => (
+            <Link
+              key={shop._id}
+              href={`/shops/${shop._id}`}
+              className="border border-blue-200 rounded-xl overflow-hidden cursor-pointer hover:translate-y-[-10px] transition-all duration-500 flex flex-col"
+            >
+              <Image
+                src={shop.image}
+                alt={shop.name}
+                width={300}
+                height={250}
+                className="bg-blue-50 w-full h-40 object-cover"
+              />
 
-            <div className="p-4">
-              <h2 className="text-lg font-semibold text-gray-800">
-                {shop.name}
-              </h2>
+              <div className="p-4 flex-1">
+                <h2 className="text-gray-900 text-lg font-medium">
+                  {shop.name}
+                </h2>
 
-              <p className="text-sm text-gray-500 mt-1">{shop.location}</p>
+                <p className="text-gray-500 text-sm">
+                  {shop.address.line1}
+                  {shop.address.line2 ? `, ${shop.address.line2}` : ""}
+                </p>
 
-              <p className="mt-3 font-medium text-blue-600">₹{shop.price}</p>
-            </div>
-          </Link>
-        ))}
-      </div>
+                <p className="text-blue-600 text-sm font-medium mt-2">
+                  ₹{shop.fees}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <p className="text-center text-gray-500 mt-10">No shops found.</p>
+      )}
     </div>
   );
 };

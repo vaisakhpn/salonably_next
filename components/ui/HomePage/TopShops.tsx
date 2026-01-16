@@ -1,9 +1,14 @@
-import Image from "next/image";
 import Link from "next/link";
-import { shops } from "@/lib/data";
-import slider_img from "../../../assets/hero.png";
+import dbConnect from "@/server/db/mongodb";
+import ShopModel from "@/server/models/Shop";
+import Image from "next/image";
 
-const TopShops = () => {
+const TopShops = async () => {
+  await dbConnect();
+
+  // Fetch top 4 shops
+  const shops = await ShopModel.find({ available: true }).limit(4).lean();
+
   return (
     <div className="flex flex-col items-center gap-4 my-16 text-gray-900 md:mx-10 ">
       <h1 className="text-3xl font-medium">Top Salon to Book</h1>
@@ -11,15 +16,17 @@ const TopShops = () => {
         Simply browse through our extensive list of salon shops.
       </p>
       <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-5 px-3 sm:px-0">
-        {shops.slice(0, 4).map((shop) => (
+        {shops.map((shop: any) => (
           <Link
-            key={shop.id}
-            href={`/shops/${shop.id}`}
+            key={shop._id}
+            href={`/shops/${shop._id}`}
             className="border border-blue-200 rounded-xl overflow-hidden cursor-pointer hover:translate-y-[-10px] transition-all duration-500 flex flex-col"
           >
             <Image
+              width={300}
+              height={250}
               className="bg-blue-50 w-full h-40 object-cover"
-              src={slider_img}
+              src={shop.image}
               alt={shop.name}
             />
 
@@ -29,9 +36,13 @@ const TopShops = () => {
                 <p>Available</p>
               </div>
               <p className="text-gray-900 text-lg font-medium">{shop.name}</p>
-              <p className="text-gray-500 text-sm">{shop.location}</p>
+              <p className="text-gray-500 text-sm">
+                {shop.address.line1}
+                {shop.address.line2 ? `, ${shop.address.line2}` : ""}
+              </p>
+
               <p className="text-blue-600 text-sm font-medium mt-2">
-                ₹{shop.price}
+                ₹{shop.fees}
               </p>
             </div>
           </Link>
