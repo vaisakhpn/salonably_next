@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -19,6 +21,8 @@ interface ShopCardProps {
 }
 
 const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
+  const [imgSrc, setImgSrc] = useState(shop.image);
+
   return (
     <Link
       href={`/shops/${shop._id}`}
@@ -26,11 +30,16 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
     >
       <div className="relative w-full h-48 bg-gray-100 overflow-hidden">
         <Image
-          src={shop.image}
+          src={imgSrc}
           alt={shop.name}
           fill
           className="object-cover group-hover:scale-105 transition-transform duration-500"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          onError={() =>
+            setImgSrc(
+              "https://cdn3.iconfinder.com/data/icons/essential-rounded/64/Rounded-31-512.png"
+            )
+          }
         />
       </div>
 

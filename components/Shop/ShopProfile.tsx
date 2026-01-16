@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { currency } from "@/lib/utils";
 import TimeSlotSelector from "../Admin/TimeSlotSelector";
+import Image from "next/image";
 
 // --- Types ---
 
@@ -37,6 +38,7 @@ const useShopProfile = (initialData: ShopData) => {
   const [isEdit, setIsEdit] = useState(false);
   const [profileData, setProfileData] = useState<ShopData>(initialData);
   const [loading, setLoading] = useState(false);
+  const [imgSrc, setImgSrc] = useState(initialData.image);
 
   const toggleEdit = () => setIsEdit((prev) => !prev);
 
@@ -127,6 +129,8 @@ const useShopProfile = (initialData: ShopData) => {
     handleAddressChange,
     updateProfile,
     toggleAvailability,
+    imgSrc,
+    setImgSrc,
   };
 };
 
@@ -142,6 +146,8 @@ const ShopProfile = ({ shopData }: ShopProfileProps) => {
     handleAddressChange,
     updateProfile,
     toggleAvailability,
+    imgSrc,
+    setImgSrc,
   } = useShopProfile(shopData);
 
   if (!profileData) return null;
@@ -152,10 +158,18 @@ const ShopProfile = ({ shopData }: ShopProfileProps) => {
         {/* Header Section */}
         <div className="relative h-48 bg-gradient-to-r from-blue-500 to-indigo-600">
           <div className="absolute -bottom-16 left-8">
-            <img
+            <Image
               className="w-32 h-32 rounded-xl border-4 border-white shadow-md object-cover bg-white"
-              src={profileData.image}
+              src={imgSrc}
               alt={profileData.name}
+              width={128}
+              height={128}
+              priority
+              onError={() =>
+                setImgSrc(
+                  "https://cdn3.iconfinder.com/data/icons/essential-rounded/64/Rounded-31-512.png"
+                )
+              }
             />
           </div>
         </div>

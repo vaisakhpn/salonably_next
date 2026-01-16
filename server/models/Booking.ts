@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
 const bookingSchema = new mongoose.Schema({
-  userId: { type: String, required: false },
-  shopId: { type: String, required: true },
-  slotDate: { type: String, required: true },
+  userId: { type: String, required: false, index: true },
+  shopId: { type: String, required: true, index: true },
+  slotDate: { type: String, required: true, index: true },
   slotTime: { type: String, required: true },
   bookingTime: { type: Date, required: true }, // Created At essentially?
   userData: { type: Object, required: true },
