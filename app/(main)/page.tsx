@@ -5,6 +5,13 @@ import TopShopsSkeleton from "@/components/ui/HomePage/TopShopsSkeleton";
 import Header from "@/components/ui/HomePage/Header";
 import DiscoverPage from "@/components/ui/HomePage/DiscoverPage";
 
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Home",
+  description: "Discover and book the best salons near you.",
+};
+
 const page = () => {
   return (
     <div>

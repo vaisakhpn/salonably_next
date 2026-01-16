@@ -11,9 +11,21 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Salonably",
+  title: {
+    default: "Salonably - Book Your Next Salon Appointment",
+    template: "%s | Salonably",
+  },
   description:
     "Book nearby salons instantly. Easy, fast, and hassle-free beauty appointments with Salonably.",
+  keywords: ["salon", "booking", "beauty", "haircut", "spa", "appointment"],
+  openGraph: {
+    title: "Salonably - Book Your Next Salon Appointment",
+    description:
+      "Book nearby salons instantly. Easy, fast, and hassle-free beauty appointments with Salonably.",
+    type: "website",
+    locale: "en_US",
+    siteName: "Salonably",
+  },
 };
 
 export default function RootLayout({

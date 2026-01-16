@@ -9,6 +9,14 @@ interface PageProps {
   }>;
 }
 
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Browse Salons",
+  description:
+    "Explore our extensive list of top-rated salons and book your appointment today.",
+};
+
 const page = async ({ searchParams }: PageProps) => {
   const { query } = await searchParams;
 
