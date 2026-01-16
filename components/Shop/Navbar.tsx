@@ -5,7 +5,11 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
-const Navbar = () => {
+interface NavbarProps {
+  shopName?: string;
+}
+
+const Navbar = ({ shopName }: NavbarProps) => {
   const router = useRouter();
 
   const logoutHandler = async () => {
@@ -36,7 +40,7 @@ const Navbar = () => {
           alt="logo"
         />
         <p className="border px-2.5 py-0.5 rounded-full border-gray-500 text-gray-600">
-          "Shop Panel"
+          {shopName || "Shop Panel"}
         </p>
       </div>
       <button

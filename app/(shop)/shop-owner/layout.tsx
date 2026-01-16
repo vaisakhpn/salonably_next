@@ -1,19 +1,18 @@
 import Navbar from "@/components/Shop/Navbar";
 import Sidebar from "@/components/Shop/Sidebar";
 import React from "react";
-import { cookies } from "next/headers";
+import { getShop } from "@/server/middleware/auth";
 
 const layout = async ({ children }: { children: React.ReactNode }) => {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("shop_token");
+  const shop = await getShop();
 
-  if (!token) {
+  if (!shop) {
     return <>{children}</>;
   }
 
   return (
     <div className="bg-[#F8F9FD]">
-      <Navbar />
+      <Navbar shopName={shop.name} />
       <div className="flex items-start">
         <Sidebar />
         <div>{children}</div>

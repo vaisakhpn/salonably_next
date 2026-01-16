@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import dbConnect from "../../../../server/db/mongodb";
 import User from "../../../../server/models/User";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 export async function POST(req: Request) {
   try {
@@ -33,7 +36,13 @@ export async function POST(req: Request) {
       password: hashedPassword,
     });
 
-    return NextResponse.json(
+    const token = jwt.sign(
+      { userId: newUser._id, email: newUser.email },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    const response = NextResponse.json(
       {
         message: "User created successfully",
         user: {
@@ -45,6 +54,15 @@ export async function POST(req: Request) {
       },
       { status: 201 }
     );
+
+    response.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60, // 1 hour
+      path: "/",
+    });
+
+    return response;
   } catch (error) {
     return NextResponse.json(
       {

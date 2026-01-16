@@ -4,6 +4,7 @@ import React from "react";
 import { assets } from "@/assets/assets";
 import { toast } from "react-toastify";
 import { currency, slotDateFormat } from "@/lib/utils";
+import Image from "next/image";
 
 interface AllBookingProps {
   bookings: any[];
@@ -49,10 +50,12 @@ const Allbooking = ({ bookings }: AllBookingProps) => {
             >
               <p className="max-sm:hidden">{index + 1}</p>
               <div className="flex items-center gap-2">
-                <img
+                <Image
                   className="w-8 rounded-full"
-                  src={item.userData.image}
+                  src={item.userData.image || assets.upload_area}
                   alt=""
+                  width={50}
+                  height={50}
                 />
                 <p>{item.userData.name}</p>
               </div>
@@ -60,10 +63,12 @@ const Allbooking = ({ bookings }: AllBookingProps) => {
                 {slotDateFormat(item.slotDate)},{item.slotTime}
               </p>
               <div className="flex items-center gap-2">
-                <img
+                <Image
                   className="w-8 rounded-full bg-gray-200"
-                  src={item.shopData.image}
+                  src={item.shopData.image || assets.upload_area}
                   alt=""
+                  width={50}
+                  height={50}
                 />
                 <p>{item.shopData.name}</p>
               </div>
@@ -76,11 +81,13 @@ const Allbooking = ({ bookings }: AllBookingProps) => {
               ) : item.isCompleted ? (
                 <p className="text-green-500 text-xs font-medium">Completed</p>
               ) : (
-                <img
+                <Image
                   onClick={() => cancelBooking(item._id)}
                   className="w-10 cursor-pointer"
                   src={assets.cancel_icon}
                   alt=""
+                  width={50}
+                  height={50}
                 />
               )}
             </div>

@@ -16,6 +16,9 @@ export const slotDateFormat = (slotDate: string) => {
     "Dec",
   ];
   const dateArray = slotDate.split("_");
+  if (dateArray.length !== 3) {
+    return slotDate;
+  }
   return (
     dateArray[0] + " " + months[Number(dateArray[1]) - 1] + " " + dateArray[2]
   );

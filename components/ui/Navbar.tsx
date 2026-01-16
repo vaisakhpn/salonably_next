@@ -6,7 +6,7 @@ import salonably from "../../assets/salonably.png";
 import Image from "next/image";
 import Link from "next/link";
 
-import { getUser } from "../../server/auth";
+import { getUser } from "@/server/middleware/auth";
 import NavUserProfile from "./NavUserProfile";
 
 const Navbar = async () => {
@@ -21,7 +21,13 @@ const Navbar = async () => {
         <div className="flex-1 max-w-md mx-4  ">
           <SearchBox />
         </div>
-        <div>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/shop-owner"
+            className="hidden sm:block text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
+          >
+            For Business
+          </Link>
           {user ? (
             <NavUserProfile user={user} />
           ) : (

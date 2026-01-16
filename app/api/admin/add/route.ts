@@ -39,6 +39,7 @@ export async function POST(req: Request) {
     const address = formData.get("address") as string; // JSON string
     const phone = formData.get("phone") as string;
     const imageFile = formData.get("image") as File;
+    const availableSlots = formData.get("availableSlots") as string; // JSON string
 
     if (!name || !email || !password || !imageFile) {
       // Basic validation
@@ -94,6 +95,7 @@ export async function POST(req: Request) {
       address: JSON.parse(address), // Expecting JSON string for address
       phone,
       date: Date.now(),
+      availableSlots: availableSlots ? JSON.parse(availableSlots) : [],
     });
 
     return NextResponse.json(
@@ -108,6 +110,7 @@ export async function POST(req: Request) {
           fees: newShop.fees,
           address: newShop.address,
           phone: newShop.phone,
+          availableSlots: newShop.availableSlots,
         },
       },
       { status: 201 }

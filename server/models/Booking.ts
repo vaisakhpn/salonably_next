@@ -13,7 +13,7 @@ const bookingSchema = new mongoose.Schema({
 
   cancelled: { type: Boolean, default: false },
   cancelledAt: { type: Date },
-  cancelledBy: { type: String, enum: ["user", "system"] },
+  cancelledBy: { type: String, enum: ["user", "system", "shop", "admin"] },
 
   payment: { type: Boolean, default: false },
   isCompleted: { type: Boolean, default: false },

@@ -4,6 +4,7 @@ import { assets } from "@/assets/assets";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { currency, slotDateFormat } from "@/lib/utils";
+import Image from "next/image";
 
 interface ShopBookingProps {
   bookings: any[];
@@ -59,10 +60,12 @@ const ShopBooking = ({ bookings }: ShopBookingProps) => {
             >
               <p className="max-sm:hidden">{index + 1}</p>
               <div className="flex items-center gap-2">
-                <img
+                <Image
                   className="w-8 rounded-full"
-                  src={item.userData.image}
+                  src={item.userData.image || assets.upload_area}
                   alt=""
+                  width={50}
+                  height={50}
                 />
                 <p>{item.userData.name}</p>
               </div>
@@ -70,10 +73,12 @@ const ShopBooking = ({ bookings }: ShopBookingProps) => {
                 {slotDateFormat(item.slotDate)}, {item.slotTime}
               </p>
               <div className="flex items-center gap-2">
-                <img
+                <Image
                   className="w-8 rounded-full bg-gray-200"
-                  src={item.shopData.image}
+                  src={item.shopData.image || assets.upload_area}
                   alt=""
+                  width={50}
+                  height={50}
                 />
                 <p>{item.shopData.name}</p>
               </div>
@@ -87,19 +92,23 @@ const ShopBooking = ({ bookings }: ShopBookingProps) => {
                 <p className="text-green-500 text-xs font-medium">Completed</p>
               ) : (
                 <div className="flex">
-                  <img
+                  <Image
                     onClick={() => handleBookingAction(item._id, "cancel")}
                     className="w-10 cursor-pointer"
                     src={assets.cancel_icon}
                     alt="Cancel"
                     title="Cancel Booking"
+                    width={50}
+                    height={50}
                   />
-                  <img
+                  <Image
                     onClick={() => handleBookingAction(item._id, "complete")}
                     className="w-10 cursor-pointer"
                     src={assets.tick_icon}
                     alt="Complete"
                     title="Complete Booking"
+                    width={50}
+                    height={50}
                   />
                 </div>
               )}

@@ -4,6 +4,7 @@ import React from "react";
 import { assets } from "@/assets/assets";
 import { toast } from "react-toastify";
 import { slotDateFormat } from "@/lib/utils";
+import Image from "next/image";
 
 interface DashboardProps {
   dashData: {
@@ -39,7 +40,13 @@ const Dashboard = ({ dashData }: DashboardProps) => {
     <div className="m-5">
       <div className="flex flex-wrap gap-3">
         <div className="flex items-center gap-2 bg-white p-4 min-w-52 rounded border-2 border-gray-100 cursor-pointer hover:scale-105 transition-all">
-          <img className="w-10 mr-3 ml-2 " src={assets.allShop} alt="" />
+          <Image
+            width={40}
+            height={40}
+            className=" mr-3 ml-2 "
+            src={assets.allShop}
+            alt=""
+          />
           <div>
             <p className="text-xl font-semibold text-gray-600">
               {dashData.shops}
@@ -48,7 +55,7 @@ const Dashboard = ({ dashData }: DashboardProps) => {
           </div>
         </div>
         <div className="flex items-center gap-2 bg-white p-4 min-w-52 rounded border-2 border-gray-100 cursor-pointer hover:scale-105 transition-all">
-          <img className="14" src={assets.appointments_icon} alt="" />
+          <Image width={60} height={60} src={assets.appointments_icon} alt="" />
           <div>
             <p className="text-xl font-semibold text-gray-600">
               {dashData.bookings}
@@ -57,7 +64,7 @@ const Dashboard = ({ dashData }: DashboardProps) => {
           </div>
         </div>
         <div className="flex items-center gap-2 bg-white p-4 min-w-52 rounded border-2 border-gray-100 cursor-pointer hover:scale-105 transition-all">
-          <img className="14" src={assets.customers_icon} alt="" />
+          <Image width={60} height={60} src={assets.customers_icon} alt="" />
           <div>
             <p className="text-xl font-semibold text-gray-600">
               {dashData.customers}
@@ -68,7 +75,7 @@ const Dashboard = ({ dashData }: DashboardProps) => {
       </div>
       <div className="bg-white ">
         <div className="flex items-center gap-2.5 px-4 py-4 mt-10 rounded-t border">
-          <img src={assets.list_icon} alt="" />
+          <Image width={20} height={20} src={assets.list_icon} alt="" />
           <p>Latest Bookings</p>
         </div>
         <div className="pt-4 border border-t-0 ">
@@ -77,7 +84,9 @@ const Dashboard = ({ dashData }: DashboardProps) => {
               className="flex items-center px-6 py-3 gap-3 hover:bg-gray-100"
               key={index}
             >
-              <img
+              <Image
+                width={50}
+                height={50}
                 className="rounded-full w-10"
                 src={item.shopData.image}
                 alt=""
@@ -93,7 +102,9 @@ const Dashboard = ({ dashData }: DashboardProps) => {
               ) : item.isCompleted ? (
                 <p className="text-green-500 text-xs font-medium">Completed</p>
               ) : (
-                <img
+                <Image
+                  width={20}
+                  height={20}
                   onClick={() => cancelBooking(item._id)}
                   className="w-10 cursor-pointer"
                   src={assets.cancel_icon}

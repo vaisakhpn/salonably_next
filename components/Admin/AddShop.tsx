@@ -4,18 +4,35 @@ import { assets } from "@/assets/assets";
 import Image from "next/image";
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import { toast } from "react-toastify";
+import TimeSlotSelector from "./TimeSlotSelector";
 
 const AddShop: React.FC = () => {
   const [shopImg, setShopImg] = useState<File | null>(null);
-  const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [phone, setPhone] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [fees, setFees] = useState<string>("");
-  const [about, setAbout] = useState<string>("");
-  const [address1, setAddress1] = useState<string>("");
-  const [address2, setAddress2] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    password: "",
+    fees: "",
+    about: "",
+    address1: "",
+    address2: "",
+  });
+
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setShopImg(e.target.files[0]);
+    }
+  };
 
   const onSubmitHandler = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -28,40 +45,43 @@ const AddShop: React.FC = () => {
         return;
       }
 
-      const formData = new FormData();
-      formData.append("image", shopImg);
-      formData.append("name", name);
-      formData.append("email", email);
-      formData.append("phone", phone);
-      formData.append("password", password);
-      formData.append("fees", fees);
-      formData.append("about", about);
-      formData.append(
+      const data = new FormData();
+      data.append("image", shopImg);
+      data.append("name", formData.name);
+      data.append("email", formData.email);
+      data.append("phone", formData.phone);
+      data.append("password", formData.password);
+      data.append("fees", formData.fees);
+      data.append("about", formData.about);
+      data.append(
         "address",
-        JSON.stringify({ line1: address1, line2: address2 })
+        JSON.stringify({ line1: formData.address1, line2: formData.address2 })
       );
+      data.append("availableSlots", JSON.stringify(availableSlots));
 
-      const response = await fetch("/api/shop/add", {
+      const response = await fetch("/api/admin/add", {
         method: "POST",
-        body: formData,
+        body: data,
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
       if (response.ok) {
-        toast.success(data.message);
-        // Reset form fields
+        toast.success(result.message);
         setShopImg(null);
-        setName("");
-        setEmail("");
-        setPhone("");
-        setPassword("");
-        setFees("");
-        setAddress1("");
-        setAddress2("");
-        setAbout("");
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          password: "",
+          fees: "",
+          about: "",
+          address1: "",
+          address2: "",
+        });
+        setAvailableSlots([]);
       } else {
-        toast.error(data.message);
+        toast.error(result.message);
       }
     } catch (error: any) {
       console.error("Add shop error:", error);
@@ -71,26 +91,25 @@ const AddShop: React.FC = () => {
     }
   };
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setShopImg(e.target.files[0]);
-    }
-  };
-
   return (
-    <form onSubmit={onSubmitHandler} className="m-5 w-full">
-      <p className="mb-3 text-lg font-medium">Add Shop</p>
+    <form onSubmit={onSubmitHandler} className="m-5 w-full max-w-5xl">
+      <p className="mb-6 text-2xl font-bold text-gray-800">Add New Shop</p>
 
-      <div className="bg-white px-8 py-8 border rounded w-full max-w-4xl max-h-[80vh] overflow-y-scroll scrollbar-hide">
-        <div className="flex items-center gap-4 mb-8 text-gray-500">
-          <label htmlFor="doc-img">
-            <Image
-              src={shopImg ? URL.createObjectURL(shopImg) : assets.upload_area}
-              className="w-16 h-16 bg-gray-100 rounded-full cursor-pointer object-cover"
-              width={64}
-              height={64}
-              alt="Shop Preview"
-            />
+      <div className="bg-white px-8 py-8 border border-gray-200 rounded-xl shadow-sm w-full max-h-[80vh] overflow-y-auto scrollbar-hide">
+        {/* Image Upload */}
+        <div className="flex items-center gap-6 mb-8">
+          <label htmlFor="doc-img" className="cursor-pointer group relative">
+            <div className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-gray-100 group-hover:border-blue-500 transition-colors">
+              <Image
+                src={
+                  shopImg ? URL.createObjectURL(shopImg) : assets.upload_area
+                }
+                className="object-cover"
+                fill
+                alt="Shop Preview"
+              />
+            </div>
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 rounded-full transition-colors" />
           </label>
           <input
             onChange={handleImageChange}
@@ -99,117 +118,151 @@ const AddShop: React.FC = () => {
             hidden
             accept="image/*"
           />
-          <p>
-            Upload shop <br />
-            picture
-          </p>
+          <div>
+            <p className="font-medium text-gray-700">Shop Image</p>
+            <p className="text-sm text-gray-500">Upload a high-quality image</p>
+          </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row items-start gap-10 text-gray-600">
-          <div className="w-full lg:flex-1 flex flex-col gap-4">
-            <div className="flex-1 flex flex-col gap-1">
-              <p>Shop Name</p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column */}
+          <div className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Shop Name
+              </label>
               <input
-                onChange={(e) => setName(e.target.value)}
-                value={name}
-                className="border rounded px-3 py-2 outline-blue-500"
+                name="name"
+                onChange={handleInputChange}
+                value={formData.name}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 type="text"
-                placeholder="Name"
+                placeholder="e.g. Luxe Salon"
                 required
               />
             </div>
 
-            <div className="flex-1 flex flex-col gap-1">
-              <p>Shop Email</p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Shop Email
+              </label>
               <input
-                onChange={(e) => setEmail(e.target.value)}
-                value={email}
-                className="border rounded px-3 py-2 outline-blue-500"
+                name="email"
+                onChange={handleInputChange}
+                value={formData.email}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 type="email"
-                placeholder="Email"
+                placeholder="shop@example.com"
                 required
               />
             </div>
 
-            <div className="flex-1 flex flex-col gap-1">
-              <p>Phone Number</p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number
+              </label>
               <input
-                onChange={(e) => setPhone(e.target.value)}
-                value={phone}
-                className="border rounded px-3 py-2 outline-blue-500"
-                type="number" // basic HTML validation
-                placeholder="Phone number"
+                name="phone"
+                onChange={handleInputChange}
+                value={formData.phone}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                type="number"
+                placeholder="10-digit number"
                 required
               />
             </div>
 
-            <div className="flex-1 flex flex-col gap-1">
-              <p>Shop Password</p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
               <input
-                onChange={(e) => setPassword(e.target.value)}
-                value={password}
-                className="border rounded px-3 py-2 outline-blue-500"
+                name="password"
+                onChange={handleInputChange}
+                value={formData.password}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 type="password"
-                placeholder="Password"
+                placeholder="Secure password"
                 required
               />
             </div>
           </div>
 
-          <div className="w-full lg:flex-1 flex flex-col gap-4">
-            <div className="flex-1 flex flex-col gap-1">
-              <p>Service Fees</p>
+          {/* Right Column */}
+          <div className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Service Fees (₹)
+              </label>
               <input
-                onChange={(e) => setFees(e.target.value)}
-                value={fees}
-                className="border rounded px-3 py-2 outline-blue-500"
+                name="fees"
+                onChange={handleInputChange}
+                value={formData.fees}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 type="number"
-                placeholder="Fees"
+                placeholder="0"
                 required
               />
             </div>
 
-            <div className="flex-1 flex flex-col gap-1">
-              <p>Address</p>
-              <input
-                onChange={(e) => setAddress1(e.target.value)}
-                value={address1}
-                className="border rounded px-3 py-2 outline-blue-500 mb-2"
-                type="text"
-                placeholder="Address Line 1"
-                required
-              />
-              <input
-                onChange={(e) => setAddress2(e.target.value)}
-                value={address2}
-                className="border rounded px-3 py-2 outline-blue-500"
-                type="text"
-                placeholder="Address Line 2"
-                required
-              />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Address
+              </label>
+              <div className="space-y-3">
+                <input
+                  name="address1"
+                  onChange={handleInputChange}
+                  value={formData.address1}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  type="text"
+                  placeholder="Address Line 1"
+                  required
+                />
+                <input
+                  name="address2"
+                  onChange={handleInputChange}
+                  value={formData.address2}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  type="text"
+                  placeholder="Address Line 2 (Optional)"
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        <div>
-          <p className="mt-4 mb-2">About Shop</p>
+        <div className="mt-6">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            About Shop
+          </label>
           <textarea
-            onChange={(e) => setAbout(e.target.value)}
-            value={about}
-            className="w-full px-4 pt-2 border rounded outline-blue-500"
-            placeholder="Write about the shop"
+            name="about"
+            onChange={handleInputChange}
+            value={formData.about}
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
+            placeholder="Write a brief description about the shop..."
             rows={5}
             required
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-blue-500 cursor-pointer px-10 py-3 mt-4 rounded-full text-white disabled:opacity-70 hover:bg-blue-600 transition-all font-medium"
-        >
-          {loading ? "Adding Shop..." : "Add Shop"}
-        </button>
+        <div className="mt-6">
+          <TimeSlotSelector
+            selectedSlots={availableSlots}
+            onChange={setAvailableSlots}
+          />
+        </div>
+
+        <div className="mt-8">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full sm:w-auto cursor-pointer bg-blue-600 text-white px-8 py-3 rounded-full font-medium hover:bg-blue-700 focus:ring-4 focus:ring-blue-200 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {loading ? "Adding Shop..." : "Add Shop"}
+          </button>
+        </div>
       </div>
     </form>
   );
