@@ -64,7 +64,7 @@ const SearchInput = ({ label }: SearchBoxProps) => {
       try {
         const response = await fetch(
           `/api/shop/suggestions?query=${encodeURIComponent(searchTerm)}`,
-          { signal }
+          { signal },
         );
         if (response.ok) {
           const data = await response.json();
@@ -102,10 +102,10 @@ const SearchInput = ({ label }: SearchBoxProps) => {
   };
 
   return (
-    <div ref={wrapperRef} className="relative sm:w-96 w-56">
+    <div ref={wrapperRef} className="relative sm:w-96 w-full">
       <form
         onSubmit={handleSubmit}
-        className="p-2 border border-blue-500 rounded-full flex items-center bg-white"
+        className="sm:p-2 p-1 border border-blue-500 rounded-full flex items-center bg-white"
       >
         <div className="relative flex w-full items-center">
           <input
@@ -167,7 +167,7 @@ const SearchBox = (props: SearchBoxProps) => {
   return (
     <Suspense
       fallback={
-        <div className="sm:w-96 w-56 h-10 bg-gray-100 rounded-full animate-pulse"></div>
+        <div className="sm:w-96 w-44 h-7 bg-gray-100 rounded-full animate-pulse"></div>
       }
     >
       <SearchInput {...props} />

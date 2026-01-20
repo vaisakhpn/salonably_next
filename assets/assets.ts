@@ -14,10 +14,12 @@ import customers_icon from "./customers_icon.svg";
 import allShop from "./allshop.svg";
 import salonably from "./salonably.png";
 import info_icon from "./info_icon.svg";
+import dropdown_icon from "./dropdown_icon.svg";
 
 export const assets = {
   salonably,
   add_icon,
+  dropdown_icon,
   admin_logo,
   appointment_icon,
   cancel_icon,
