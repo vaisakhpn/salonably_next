@@ -361,6 +361,9 @@ const Booking: React.FC<BookingProps> = ({ shopData }) => {
               {bookingDetails.date} | {bookingDetails.time}
             </p>
             <p className="text-sm text-gray-600 mt-1">₹{shopInfo.fees}</p>
+            <p className="text-lg font-bold text-black mt-1">
+              Screenshot This!
+            </p>
             {!isLoggedIn && (
               <p className="text-sm text-gray-600 mt-2">
                 Booking for: {guestName} ({guestPhone})
