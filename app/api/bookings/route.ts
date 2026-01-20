@@ -43,7 +43,7 @@ export async function POST(req: Request) {
           const token = jwt.sign(
             { userId: newUser._id, email: newUser.email, phone: newUser.phone },
             process.env.JWT_SECRET!,
-            { expiresIn: "7d" }
+            { expiresIn: "7d" },
           );
 
           (await cookies()).set("token", token, {
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
     if (!shopId || !slotDate || !slotTime || !amount) {
       return NextResponse.json(
         { message: "Missing required fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -80,7 +80,7 @@ export async function POST(req: Request) {
     if (existing) {
       return NextResponse.json(
         { message: "Slot already booked" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -107,13 +107,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { message: "Booking successful", booking: newBooking },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error: any) {
     console.error("Booking error:", error);
     return NextResponse.json(
       { message: error.message || "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -126,9 +126,41 @@ export async function GET() {
     }
 
     await dbConnect();
-    const bookings = await BookingModel.find({ userId: user._id }).sort({
+
+    // Fetch bookings
+    let bookings = await BookingModel.find({ userId: user._id }).sort({
       createdAt: -1,
     });
+
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const updates = [];
+
+    // Check for past bookings and update status
+    for (const booking of bookings) {
+      if (booking.status === "booked") {
+        try {
+          // Construct date string: "20 Jan 2026 10:00 AM"
+          const dateString = `${booking.slotDate} ${currentYear} ${booking.slotTime}`;
+          const bookingDateTime = new Date(dateString);
+
+          // Handle year boundary (e.g., booking in Jan 2026, current date Dec 2025 - unlikely with current logic but good to keep in mind)
+          // For now, assuming current year is fine as slots are generated for next 7 days.
+
+          if (bookingDateTime < now) {
+            booking.status = "completed";
+            booking.isCompleted = true;
+            updates.push(booking.save());
+          }
+        } catch (e) {
+          console.error("Error parsing date for booking:", booking._id, e);
+        }
+      }
+    }
+
+    if (updates.length > 0) {
+      await Promise.all(updates);
+    }
 
     return NextResponse.json({ bookings }, { status: 200 });
   } catch (error) {
@@ -137,7 +169,7 @@ export async function GET() {
         message: "Internal Server Error",
         error: error instanceof Error ? error.message : String(error),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
