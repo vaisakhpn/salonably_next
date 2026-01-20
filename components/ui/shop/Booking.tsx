@@ -19,14 +19,37 @@ const Booking: React.FC<BookingProps> = ({ shopData }) => {
   const [slotIndex, setSlotIndex] = useState(0);
   const [slotTime, setSlotTime] = useState("");
   const [guestName, setGuestName] = useState("");
-  const [guestEmail, setGuestEmail] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [occupiedSlots, setOccupiedSlots] = useState<
+    { date: string; time: string }[]
+  >([]);
   const [bookingDetails, setBookingDetails] = useState<null | {
     date: string;
     time: string;
   }>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchOccupiedSlots = async () => {
+      try {
+        const res = await fetch(
+          `/api/bookings/occupied?shopId=${shopInfo._id}`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setOccupiedSlots(data.occupiedSlots);
+        }
+      } catch (error) {
+        console.error("Failed to fetch occupied slots", error);
+      }
+    };
+
+    if (shopInfo._id) {
+      fetchOccupiedSlots();
+    }
+  }, [shopInfo._id]);
 
   useEffect(() => {
     const checkLogin = async () => {
@@ -44,14 +67,48 @@ const Booking: React.FC<BookingProps> = ({ shopData }) => {
     checkLogin();
   }, []);
 
+  const isSlotOccupied = (date: string, time: string) => {
+    return occupiedSlots.some(
+      (slot) => slot.date === date && slot.time === time,
+    );
+  };
+
+  const isSlotPast = (date: string, time: string) => {
+    const today = new Date();
+    const todayDateString =
+      today.getDate() +
+      " " +
+      today.toLocaleString("default", { month: "short" });
+
+    if (date !== todayDateString) {
+      return false; // Future dates are available
+    }
+
+    const currentMinutes = today.getHours() * 60 + today.getMinutes();
+    const slotMinutes = convertTimeToMinutes(time);
+
+    // Disable if current time + 15 minutes >= slot time
+    return currentMinutes + 15 >= slotMinutes;
+  };
+
   const handleBooking = async () => {
     if (!slotTime) {
       alert("Please select a time slot");
       return;
     }
 
-    if (!isLoggedIn && (!guestName || !guestEmail)) {
-      alert("Please enter your details to book as a guest");
+    if (isSlotOccupied(shopSlots[slotIndex].date, slotTime)) {
+      alert("This slot is already booked. Please choose another one.");
+      return;
+    }
+
+    if (isSlotPast(shopSlots[slotIndex].date, slotTime)) {
+      alert("This slot is no longer available.");
+      return;
+    }
+
+    if (!isLoggedIn && (!guestName || !guestPhone)) {
+      alert("Please enter both Name and Phone Number");
       return;
     }
 
@@ -67,7 +124,7 @@ const Booking: React.FC<BookingProps> = ({ shopData }) => {
           shopData: shopInfo,
           amount: shopInfo.fees,
           guestDetails: !isLoggedIn
-            ? { name: guestName, email: guestEmail }
+            ? { name: guestName, phone: guestPhone }
             : undefined,
         }),
       });
@@ -83,15 +140,19 @@ const Booking: React.FC<BookingProps> = ({ shopData }) => {
         throw new Error(data.message || "Booking failed");
       }
 
+      // Optimistically update occupied slots
+      setOccupiedSlots((prev) => [
+        ...prev,
+        { date: shopSlots[slotIndex].date, time: slotTime },
+      ]);
+
       setBookingDetails({
         date: shopSlots[slotIndex].date,
         time: slotTime,
       });
 
       if (!isLoggedIn) {
-        alert(
-          `Booking successful! An account has been created for you.\nEmail: ${guestEmail}\nPassword: ${guestName}123`
-        );
+        // No account creation message needed
       }
     } catch (error) {
       alert(error instanceof Error ? error.message : "Something went wrong");
@@ -100,40 +161,81 @@ const Booking: React.FC<BookingProps> = ({ shopData }) => {
     }
   };
 
-  const generateDates = () => {
-    const dates = [];
-    const today = new Date();
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      dates.push({
-        date:
-          date.getDate() +
-          " " +
-          date.toLocaleString("default", { month: "short" }),
-        day: date.toLocaleString("default", { weekday: "short" }).toUpperCase(),
-        fullDate: date,
-      });
-    }
-    return dates;
-  };
+  interface Slot {
+    date: string;
+    day: string;
+    fullDate: Date;
+    times: string[];
+  }
 
-  const shopSlots = generateDates().map((d) => ({
-    ...d,
-    times:
-      shopInfo.availableSlots && shopInfo.availableSlots.length > 0
-        ? shopInfo.availableSlots
-        : [
-            "10:00 AM",
-            "11:00 AM",
-            "12:00 PM",
-            "01:00 PM",
-            "02:00 PM",
-            "03:00 PM",
-            "04:00 PM",
-            "05:00 PM",
-          ],
-  }));
+  const [shopSlots, setShopSlots] = useState<Slot[]>([]);
+
+  useEffect(() => {
+    const generateDates = () => {
+      const dates = [];
+      const today = new Date();
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() + i);
+        dates.push({
+          date:
+            date.getDate() +
+            " " +
+            date.toLocaleString("default", { month: "short" }),
+          day: date
+            .toLocaleString("default", { weekday: "short" })
+            .toUpperCase(),
+          fullDate: date,
+        });
+      }
+      return dates;
+    };
+
+    const convertTimeToMinutes = (timeStr: string) => {
+      const [time, period] = timeStr.split(" ");
+      let [hours, minutes] = time.split(":").map(Number);
+      if (period === "PM" && hours !== 12) hours += 12;
+      if (period === "AM" && hours === 12) hours = 0;
+      return hours * 60 + minutes;
+    };
+
+    const generatedSlots = generateDates().map((d) => {
+      const rawTimes =
+        shopInfo.availableSlots && shopInfo.availableSlots.length > 0
+          ? shopInfo.availableSlots
+          : [
+              "10:00 AM",
+              "11:00 AM",
+              "12:00 PM",
+              "01:00 PM",
+              "02:00 PM",
+              "03:00 PM",
+              "04:00 PM",
+              "05:00 PM",
+              "10:00 PM",
+            ];
+
+      const sortedTimes = [...rawTimes].sort(
+        (a: string, b: string) =>
+          convertTimeToMinutes(a) - convertTimeToMinutes(b),
+      );
+
+      return {
+        ...d,
+        times: sortedTimes,
+      };
+    });
+
+    setShopSlots(generatedSlots);
+  }, [shopInfo]);
+
+  const convertTimeToMinutes = (timeStr: string) => {
+    const [time, period] = timeStr.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+    if (period === "PM" && hours !== 12) hours += 12;
+    if (period === "AM" && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
@@ -183,19 +285,35 @@ const Booking: React.FC<BookingProps> = ({ shopData }) => {
             </div>
 
             <div className="flex gap-3 mt-6 overflow-x-auto">
-              {shopSlots[slotIndex].times.map((time: string, index: number) => (
-                <p
-                  key={index}
-                  onClick={() => setSlotTime(time)}
-                  className={`cursor-pointer px-5 py-2 rounded-full text-sm ${
-                    slotTime === time
-                      ? "bg-blue-500 text-white"
-                      : "border text-gray-500"
-                  }`}
-                >
-                  {time}
-                </p>
-              ))}
+              {shopSlots.length > 0 &&
+                shopSlots[slotIndex] &&
+                shopSlots[slotIndex].times.map(
+                  (time: string, index: number) => {
+                    const isOccupied = isSlotOccupied(
+                      shopSlots[slotIndex].date,
+                      time,
+                    );
+                    const isPast = isSlotPast(shopSlots[slotIndex].date, time);
+                    const isDisabled = isOccupied || isPast;
+
+                    return (
+                      <button
+                        key={index}
+                        disabled={isDisabled}
+                        onClick={() => !isDisabled && setSlotTime(time)}
+                        className={`px-5 py-2 rounded-full text-sm transition-colors ${
+                          isDisabled
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed border-none"
+                            : slotTime === time
+                              ? "bg-blue-500 text-white cursor-pointer"
+                              : "border text-gray-500 hover:bg-gray-50 cursor-pointer"
+                        }`}
+                      >
+                        {time}
+                      </button>
+                    );
+                  },
+                )}
             </div>
 
             {!isLoggedIn && (
@@ -210,14 +328,14 @@ const Booking: React.FC<BookingProps> = ({ shopData }) => {
                     className="border px-4 py-2 rounded w-full outline-none focus:border-blue-500"
                   />
                   <input
-                    type="email"
-                    placeholder="Email Address"
-                    value={guestEmail}
-                    onChange={(e) => setGuestEmail(e.target.value)}
+                    type="number"
+                    placeholder="Phone Number"
+                    value={guestPhone}
+                    onChange={(e) => setGuestPhone(e.target.value)}
                     className="border px-4 py-2 rounded w-full outline-none focus:border-blue-500"
                   />
                   <p className="text-xs text-gray-500">
-                    An account will be created for you automatically.
+                    Sign in to see your bookings and cancel them
                   </p>
                 </div>
               </div>
@@ -245,21 +363,26 @@ const Booking: React.FC<BookingProps> = ({ shopData }) => {
             <p className="text-sm text-gray-600 mt-1">₹{shopInfo.fees}</p>
             {!isLoggedIn && (
               <p className="text-sm text-gray-600 mt-2">
-                Account created for: {guestName} ({guestEmail})
+                Booking for: {guestName} ({guestPhone})
               </p>
             )}
             <div className="flex flex-col gap-2 mt-6">
+              {isLoggedIn && (
+                <button
+                  onClick={() => {
+                    setBookingDetails(null);
+                    router.push("/profile/my-bookings");
+                  }}
+                  className="cursor-pointer bg-blue-500 text-white px-6 py-2 rounded"
+                >
+                  Go to My Bookings
+                </button>
+              )}
               <button
                 onClick={() => {
                   setBookingDetails(null);
-                  router.push("/profile/my-bookings");
+                  router.push("/");
                 }}
-                className="cursor-pointer bg-blue-500 text-white px-6 py-2 rounded"
-              >
-                Go to My Bookings
-              </button>
-              <button
-                onClick={() => setBookingDetails(null)}
                 className="cursor-pointer bg-gray-300 px-6 py-2 rounded"
               >
                 Close

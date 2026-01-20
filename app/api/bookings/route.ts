@@ -17,48 +17,22 @@ export async function POST(req: Request) {
 
     // If no user logged in, check for guest details
     if (!user) {
-      if (guestDetails && guestDetails.name && guestDetails.email) {
-        // Check if user exists
-        let existingUser = await UserModel.findOne({
-          email: guestDetails.email,
-        });
-
-        if (existingUser) {
-          user = existingUser;
-        } else {
-          // Create new user
-          const password = guestDetails.name + "123";
-          const hashedPassword = await bcrypt.hash(password, 10);
-
-          const newUser = await UserModel.create({
-            name: guestDetails.name,
-            email: guestDetails.email,
-            password: hashedPassword,
-            phone: guestDetails.phone || "",
-          });
-
-          user = newUser;
-
-          // Auto-login the new user by setting the cookie
-          const token = jwt.sign(
-            { userId: newUser._id, email: newUser.email, phone: newUser.phone },
-            process.env.JWT_SECRET!,
-            { expiresIn: "7d" },
-          );
-
-          (await cookies()).set("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            maxAge: 60 * 60 * 24 * 7, // 7 days
-            path: "/",
-          });
-        }
+      if (guestDetails && guestDetails.name && guestDetails.phone) {
+        // Guest booking: Create a dummy user object for the booking
+        user = {
+          _id: null,
+          name: guestDetails.name,
+          email: "", // Email not required for guest
+          phone: guestDetails.phone,
+          image: "", // Placeholder for guest
+        };
       } else {
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
       }
     }
 
     // Ensure user is defined (TypeScript narrowing)
+    // Note: user._id can be null for guests
     if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }

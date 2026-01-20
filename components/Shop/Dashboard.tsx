@@ -12,9 +12,16 @@ interface ShopData {
   image: string;
 }
 
+interface UserData {
+  name: string;
+  image?: string;
+  phone?: string;
+}
+
 interface Booking {
   _id: string;
   shopData: ShopData;
+  userData: UserData;
   slotDate: string;
   cancelled: boolean;
   isCompleted: boolean;
@@ -63,7 +70,6 @@ const Dashboard: React.FC<DashboardProps> = ({ dashData }) => {
             <Image
               width={40}
               height={40}
-              
               src={assets.appointments_icon}
               alt=""
             />
@@ -78,13 +84,7 @@ const Dashboard: React.FC<DashboardProps> = ({ dashData }) => {
 
         <div className="flex items-center gap-4 bg-white p-6 min-w-52 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
           <div className="p-3 bg-green-50 rounded-full">
-            <Image
-              width={40}
-              height={40}
-              
-              src={assets.customers_icon}
-              alt=""
-            />
+            <Image width={40} height={40} src={assets.customers_icon} alt="" />
           </div>
           <div>
             <p className="text-2xl font-bold text-gray-800">
@@ -98,18 +98,12 @@ const Dashboard: React.FC<DashboardProps> = ({ dashData }) => {
       {/* Latest Bookings */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 bg-gray-50/50">
-          <Image
-            width={20}
-            height={20}
-           
-            src={assets.list_icon}
-            alt=""
-          />
+          <Image width={20} height={20} src={assets.list_icon} alt="" />
           <p className="font-semibold text-gray-700">Latest Bookings</p>
         </div>
 
         <div className="divide-y divide-gray-100">
-          {dashData.latestBookings.map((item) => (
+          {[...dashData.latestBookings].reverse().map((item) => (
             <div
               className="flex items-center px-6 py-4 gap-4 hover:bg-gray-50 transition-colors"
               key={item._id}
@@ -118,12 +112,12 @@ const Dashboard: React.FC<DashboardProps> = ({ dashData }) => {
                 width={100}
                 height={100}
                 className="rounded-full w-10 h-10 object-cover border border-gray-200"
-                src={item.shopData.image}
-                alt={item.shopData.name}
+                src={item.userData?.image || assets.people_icon} // Use user image or fallback
+                alt={item.userData?.name || "Customer"}
               />
               <div className="flex-1 min-w-0">
                 <p className="text-gray-900 font-medium truncate">
-                  {item.shopData.name}
+                  {item.userData?.name || "Guest User"}
                 </p>
                 <p className="text-gray-500 text-sm">
                   {slotDateFormat(item.slotDate)}

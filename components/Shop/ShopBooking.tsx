@@ -15,7 +15,7 @@ const ShopBooking = ({ bookings }: ShopBookingProps) => {
 
   const handleBookingAction = async (
     id: string,
-    action: "cancel" | "complete"
+    action: "cancel" | "complete",
   ) => {
     try {
       const endpoint =
@@ -41,7 +41,7 @@ const ShopBooking = ({ bookings }: ShopBookingProps) => {
   };
 
   return (
-    <div className="w-full max-w-6xl m-5">
+    <div className="w-full sm:max-w-6xl max-w-5xl sm:m-5 m-0">
       <p className="mb-3 text-lg font-medium">All Bookings</p>
       <div className="bg-white border rounded text-sm  max-h-[80vh] min-h-[60vh] overflow-y-scroll">
         <div className="hidden sm:grid grid-cols-[0.5fr_3fr_3fr_3fr_1fr_1fr] grid-flow-col py-3 px-6 gap-1 border-b">
@@ -53,7 +53,7 @@ const ShopBooking = ({ bookings }: ShopBookingProps) => {
           <p>Action</p>
         </div>
         {bookings && bookings.length > 0 ? (
-          bookings.map((item, index) => (
+          [...bookings].reverse().map((item, index) => (
             <div
               className="flex flex-wrap justify-between max-sm:gap-5 sm:grid sm:grid-cols-[0.5fr_3fr_3fr_3fr_1fr_1fr] items-center text-gray-500 py-3 px-6 border-b hover:bg-gray-50"
               key={index}
@@ -67,7 +67,10 @@ const ShopBooking = ({ bookings }: ShopBookingProps) => {
                   width={50}
                   height={50}
                 />
-                <p>{item.userData.name}</p>
+                <p>
+                  {item.userData?.name || "Guest"}
+                  {item.userData?.phone ? ` - ${item.userData.phone}` : ""}
+                </p>
               </div>
               <p>
                 {slotDateFormat(item.slotDate)}, {item.slotTime}
