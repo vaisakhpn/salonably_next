@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 const Login = () => {
   const [state, setState] = useState("Sign Up");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -19,7 +20,9 @@ const Login = () => {
     const endpoint =
       state === "Sign Up" ? "/api/auth/signup" : "/api/auth/login";
     const body =
-      state === "Sign Up" ? { name, email, password } : { email, password };
+      state === "Sign Up"
+        ? { name, phone, email, password }
+        : { email, password };
 
     try {
       const res = await fetch(endpoint, {
@@ -55,23 +58,35 @@ const Login = () => {
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
         {state === "Sign Up" && (
-          <div className="w-full">
-            <p>Full Name</p>
-            <input
-              className="border border-zinc-300 rounded w-full p-2 mt-1"
-              type="text"
-              required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+          <div className="flex-row sm:flex w-full gap-4">
+            <div className="w-full">
+              <p>Full Name</p>
+              <input
+                className="border border-zinc-300 rounded w-full p-2 mt-1"
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div className="w-full">
+              <p>Phone Number</p>
+              <input
+                className="border border-zinc-300 rounded w-full p-2 mt-1"
+                type="text"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
+              />
+            </div>
           </div>
         )}
 
         <div className="w-full">
-          <p>Email</p>
+          <p>{state === "Sign Up" ? "Email" : "Email or Phone Number"}</p>
           <input
             className="border border-zinc-300 rounded w-full p-2 mt-1"
-            type="email"
+            type={state === "Sign Up" ? "email" : "text"}
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -96,8 +111,8 @@ const Login = () => {
           {loading
             ? "Processing..."
             : state === "Sign Up"
-            ? "Create Account"
-            : "Login"}
+              ? "Create Account"
+              : "Login"}
         </button>
 
         {state === "Sign Up" ? (

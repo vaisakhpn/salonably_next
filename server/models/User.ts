@@ -15,6 +15,8 @@ const UserSchema = new mongoose.Schema(
     phone: {
       type: String,
       required: false,
+      unique: true,
+      sparse: true,
     },
     image: {
       type: String,
@@ -26,7 +28,7 @@ const UserSchema = new mongoose.Schema(
       required: [true, "Please specify a password for this user."],
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);

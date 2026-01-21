@@ -2,6 +2,7 @@ import React from "react";
 
 import barber from "../../../assets/barber.png";
 import Image from "next/image";
+import Link from "next/link";
 
 const Banner = () => {
   return (
@@ -13,9 +14,11 @@ const Banner = () => {
           <p className="mt-4">With 100+ Trusted Shops</p>
         </div>
 
-        <button className="bg-white text-sm sm:text-base text-gray-600 px-8 py-3 rounded-full mt-4 hover:scale-105 transition-all duration-300">
-          Create account
-        </button>
+        <Link href="/login">
+          <button className="cursor-pointer bg-white text-sm sm:text-base text-gray-600 px-8 py-3 rounded-full mt-4 hover:scale-105 transition-all duration-300">
+            Create account
+          </button>
+        </Link>
       </div>
       {/*---right---*/}
 

@@ -13,18 +13,22 @@ export async function POST(req: Request) {
     if (!email || !password) {
       return NextResponse.json(
         { message: "Please provide all fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     await dbConnect();
 
-    const user = await User.findOne({ email });
+    // Check if input is email or phone
+    const isEmail = email.includes("@");
+    const query = isEmail ? { email } : { phone: email };
+
+    const user = await User.findOne(query);
 
     if (!user) {
       return NextResponse.json(
         { message: "Invalid credentials" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -33,14 +37,14 @@ export async function POST(req: Request) {
     if (!isMatch) {
       return NextResponse.json(
         { message: "Invalid credentials" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
 
     const response = NextResponse.json(
@@ -53,7 +57,7 @@ export async function POST(req: Request) {
           image: user.image,
         },
       },
-      { status: 200 }
+      { status: 200 },
     );
 
     // Set cookie
@@ -71,7 +75,7 @@ export async function POST(req: Request) {
         message: "Something went wrong",
         error: error instanceof Error ? error.message : String(error),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -8,23 +8,25 @@ const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 export async function POST(req: Request) {
   try {
-    const { name, email, password } = await req.json();
+    const { name, email, password, phone } = await req.json();
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !phone) {
       return NextResponse.json(
         { message: "Please provide all fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     await dbConnect();
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({
+      $or: [{ email }, { phone }],
+    });
 
     if (existingUser) {
       return NextResponse.json(
-        { message: "User already exists" },
-        { status: 400 }
+        { message: "User already exists with this email or phone" },
+        { status: 400 },
       );
     }
 
@@ -33,13 +35,14 @@ export async function POST(req: Request) {
     const newUser = await User.create({
       name,
       email,
+      phone,
       password: hashedPassword,
     });
 
     const token = jwt.sign(
       { userId: newUser._id, email: newUser.email },
       JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" },
     );
 
     const response = NextResponse.json(
@@ -52,7 +55,7 @@ export async function POST(req: Request) {
           image: newUser.image,
         },
       },
-      { status: 201 }
+      { status: 201 },
     );
 
     response.cookies.set("token", token, {
@@ -69,7 +72,7 @@ export async function POST(req: Request) {
         message: "Something went wrong",
         error: error instanceof Error ? error.message : String(error),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

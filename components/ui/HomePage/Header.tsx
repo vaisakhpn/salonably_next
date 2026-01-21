@@ -3,6 +3,7 @@ import group from "../../../assets/group_profiles.png";
 import book_arrow from "../../../assets/arrow_icon.svg";
 import slider_img from "../../../assets/hero.png";
 import Image from "next/image";
+import Link from "next/link";
 
 const Header = () => {
   return (
@@ -34,9 +35,11 @@ const Header = () => {
           </p>
         </div>
         <div className="mt-3 flex w-full items-center justify-center md:justify-start md:items-start">
-          <button className="flex items-center justify-center gap-2 bg-white px-8 py-3 rounded-full text-gray-600 text-sm m-auto md:m-0 hover:scale-105 transition-all duration-300">
-            Book Now <Image className="w-3" src={book_arrow} alt="book" />
-          </button>
+          <Link className="cursor-pointer" href="/shops">
+            <button className="cursor-pointer flex items-center justify-center gap-2 bg-white px-8 py-3 rounded-full text-gray-600 text-sm m-auto md:m-0 hover:scale-105 transition-all duration-300">
+              Book Now <Image className="w-3" src={book_arrow} alt="book" />
+            </button>
+          </Link>
         </div>
       </div>
     </div>

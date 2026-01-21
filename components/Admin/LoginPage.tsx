@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const LoginUser = () => {
   
@@ -46,6 +47,9 @@ const LoginUser = () => {
   return (
     <form onSubmit={onSubmitHandler} className="min-h-[80vh] flex items-center">
       <div className="flex flex-col gap-3 m-auto items-start p-8 min-w-[340px] sm:min-w-96 border rounded-xl text-[#5E5E5E] text-sm shadow-lg">
+        <Link href="/" className="text-blue-500 underline">
+          Home
+        </Link>
         <p className="text-2xl gap-3 font-semibold m-auto">
           <span className="text-blue-500"> Admin </span>
           Login
