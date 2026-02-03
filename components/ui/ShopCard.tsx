@@ -28,7 +28,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
       href={`/shops/${shop._id}`}
       className="group block border border-gray-200 rounded-xl overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 transition-all duration-300 bg-white"
     >
-      <div className="relative w-full h-48 bg-gray-100 overflow-hidden">
+      <div className="relative w-full h-24 sm:h-48 bg-gray-100 overflow-hidden">
         <Image
           src={imgSrc}
           alt={shop.name}
@@ -37,7 +37,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           onError={() =>
             setImgSrc(
-              "https://cdn3.iconfinder.com/data/icons/essential-rounded/64/Rounded-31-512.png"
+              "https://cdn3.iconfinder.com/data/icons/essential-rounded/64/Rounded-31-512.png",
             )
           }
         />

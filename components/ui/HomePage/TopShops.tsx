@@ -20,7 +20,7 @@ const TopShops = async () => {
       <p className="sm:w-1/3 text-center text-gray-500 text-sm">
         Simply browse through our extensive list of salon shops.
       </p>
-      <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-5 px-3 sm:px-0">
+      <div className="w-full grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-5 px-3 sm:px-0">
         {shops.map((shop: any) => (
           <ShopCard key={shop._id} shop={shop} />
         ))}
