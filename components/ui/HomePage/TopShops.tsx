@@ -7,7 +7,10 @@ const TopShops = async () => {
   await dbConnect();
 
   // Fetch top 4 shops
-  const shopsData = await ShopModel.find({ available: true }).limit(4).lean();
+  const shopsData = await ShopModel.find({ available: true })
+    .sort({ createdAt: -1 })
+    .limit(4)
+    .lean();
   const shops = JSON.parse(JSON.stringify(shopsData));
 
   // Serialize for client component (if ShopCard was client, but it's not strictly required here as it's rendered in server component)

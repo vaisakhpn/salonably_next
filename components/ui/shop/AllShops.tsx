@@ -18,7 +18,7 @@ const AllShops: React.FC<AllShopsProps> = ({ shops }) => {
 
       {/* ---------- Shop Grid ---------- */}
       {shops.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {shops.map((shop) => (
             <ShopCard key={shop._id} shop={shop} />
           ))}

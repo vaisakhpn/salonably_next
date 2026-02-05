@@ -44,13 +44,13 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
       </div>
 
       <div className="p-5">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+        <div className="flex flex-col sm:flex-row gap-1.5  justify-between items-start mb-2">
+          <h3 className="text-sm sm:text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
             {shop.name}
           </h3>
           {shop.available !== undefined && (
             <div
-              className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium ${
+              className={`flex items-center gap-1.5 sm:px-2 px-0 py-1 rounded-full text-xs font-medium ${
                 shop.available
                   ? "bg-green-50 text-green-700"
                   : "bg-red-50 text-red-700"
