@@ -5,6 +5,7 @@ import Image from "next/image";
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import { toast } from "react-toastify";
 import TimeSlotSelector from "./TimeSlotSelector";
+import { numberInputOnWheelPreventChange } from "@/lib/utils";
 
 const AddShop: React.FC = () => {
   const [shopImg, setShopImg] = useState<File | null>(null);
@@ -12,6 +13,7 @@ const AddShop: React.FC = () => {
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: "",
+    ownerName: "",
     email: "",
     phone: "",
     password: "",
@@ -22,7 +24,7 @@ const AddShop: React.FC = () => {
   });
 
   const handleInputChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -48,6 +50,7 @@ const AddShop: React.FC = () => {
       const data = new FormData();
       data.append("image", shopImg);
       data.append("name", formData.name);
+      data.append("ownerName", formData.ownerName);
       data.append("email", formData.email);
       data.append("phone", formData.phone);
       data.append("password", formData.password);
@@ -55,7 +58,7 @@ const AddShop: React.FC = () => {
       data.append("about", formData.about);
       data.append(
         "address",
-        JSON.stringify({ line1: formData.address1, line2: formData.address2 })
+        JSON.stringify({ line1: formData.address1, line2: formData.address2 }),
       );
       data.append("availableSlots", JSON.stringify(availableSlots));
 
@@ -71,6 +74,7 @@ const AddShop: React.FC = () => {
         setShopImg(null);
         setFormData({
           name: "",
+          ownerName: "",
           email: "",
           phone: "",
           password: "",
@@ -144,6 +148,21 @@ const AddShop: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
+                Owner Name
+              </label>
+              <input
+                name="ownerName"
+                onChange={handleInputChange}
+                value={formData.ownerName}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                type="text"
+                placeholder="e.g. John Doe"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Shop Email
               </label>
               <input
@@ -168,6 +187,7 @@ const AddShop: React.FC = () => {
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 type="number"
                 placeholder="10-digit number"
+                onWheel={numberInputOnWheelPreventChange}
                 required
               />
             </div>
@@ -201,6 +221,7 @@ const AddShop: React.FC = () => {
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 type="number"
                 placeholder="0"
+                onWheel={numberInputOnWheelPreventChange}
                 required
               />
             </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { numberInputOnWheelPreventChange } from "@/lib/utils";
 
 import slider_img from "@/assets/hero.png"; // Fallback image
 
@@ -252,6 +253,11 @@ const Booking: React.FC<BookingProps> = ({ shopData }) => {
 
             <div className="flex-1 border rounded-lg p-6 bg-white">
               <h1 className="text-2xl font-semibold">{shopInfo.name}</h1>
+              {shopInfo.ownerName && (
+                <p className="text-sm font-medium text-gray-500 mt-1">
+                  Owner: {shopInfo.ownerName}
+                </p>
+              )}
               <p className="text-sm text-gray-600 mt-1">
                 {shopInfo.address?.line1}, {shopInfo.address?.line2}
               </p>
@@ -333,6 +339,7 @@ const Booking: React.FC<BookingProps> = ({ shopData }) => {
                     value={guestPhone}
                     onChange={(e) => setGuestPhone(e.target.value)}
                     className="border px-4 py-2 rounded w-full outline-none focus:border-blue-500"
+                    onWheel={numberInputOnWheelPreventChange}
                   />
                   <p className="text-xs text-gray-500">
                     Sign in to see your bookings and cancel them

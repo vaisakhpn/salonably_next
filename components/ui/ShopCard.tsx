@@ -7,6 +7,7 @@ import Image from "next/image";
 export interface ShopData {
   _id: string;
   name: string;
+  ownerName?: string;
   image: string;
   fees: number;
   address: {
@@ -48,6 +49,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
           <h3 className="text-sm sm:text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
             {shop.name}
           </h3>
+
           {shop.available !== undefined && (
             <div
               className={`flex items-center gap-1.5 sm:px-2 px-0 py-1 rounded-full text-xs font-medium ${

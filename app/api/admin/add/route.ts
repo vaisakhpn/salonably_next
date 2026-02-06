@@ -22,7 +22,7 @@ if (
     api_secret: !!cloudinaryConfig.api_secret,
   });
   throw new Error(
-    "Cloudinary configuration is missing. Please check your .env.local file."
+    "Cloudinary configuration is missing. Please check your .env.local file.",
   );
 }
 
@@ -32,6 +32,7 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const name = formData.get("name") as string;
+    const ownerName = formData.get("ownerName") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
     const about = formData.get("about") as string;
@@ -41,11 +42,11 @@ export async function POST(req: Request) {
     const imageFile = formData.get("image") as File;
     const availableSlots = formData.get("availableSlots") as string; // JSON string
 
-    if (!name || !email || !password || !imageFile) {
+    if (!name || !email || !password || !imageFile || !ownerName) {
       // Basic validation
       return NextResponse.json(
         { message: "Missing required fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -56,7 +57,7 @@ export async function POST(req: Request) {
     if (existingShop) {
       return NextResponse.json(
         { message: "Shop with this email already exists" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -73,7 +74,7 @@ export async function POST(req: Request) {
           } else {
             resolve(result);
           }
-        }
+        },
       );
       uploadStream.end(buffer);
     });
@@ -87,6 +88,7 @@ export async function POST(req: Request) {
     // Create Shop
     const newShop = await ShopModel.create({
       name,
+      ownerName,
       email,
       password: hashedPassword,
       image: imageUrl,
@@ -104,6 +106,7 @@ export async function POST(req: Request) {
         shop: {
           id: newShop._id,
           name: newShop.name,
+          ownerName: newShop.ownerName,
           email: newShop.email,
           image: newShop.image,
           about: newShop.about,
@@ -113,13 +116,20 @@ export async function POST(req: Request) {
           availableSlots: newShop.availableSlots,
         },
       },
-      { status: 201 }
+      { status: 201 },
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error adding shop:", error);
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern)[0];
+      return NextResponse.json(
+        { message: `Shop with this ${field} already exists.` },
+        { status: 400 },
+      );
+    }
     return NextResponse.json(
       { message: "Internal Server Error", error: String(error) },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

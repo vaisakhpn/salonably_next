@@ -23,3 +23,13 @@ export const slotDateFormat = (slotDate: string) => {
     dateArray[0] + " " + months[Number(dateArray[1]) - 1] + " " + dateArray[2]
   );
 };
+
+export const numberInputOnWheelPreventChange = (
+  e: React.WheelEvent<HTMLInputElement>,
+) => {
+  // Prevent the input value change
+  e.currentTarget.blur();
+
+  // Prevent the page/container scrolling
+  e.stopPropagation();
+};

@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { currency } from "@/lib/utils";
+import { currency, numberInputOnWheelPreventChange } from "@/lib/utils";
 import TimeSlotSelector from "../Admin/TimeSlotSelector";
 import Image from "next/image";
 
@@ -44,7 +44,7 @@ const useShopProfile = (initialData: ShopData) => {
 
   const handleInputChange = (
     field: keyof ShopData,
-    value: string | number | boolean | string[]
+    value: string | number | boolean | string[],
   ) => {
     setProfileData((prev) => ({ ...prev, [field]: value }));
   };
@@ -167,7 +167,7 @@ const ShopProfile = ({ shopData }: ShopProfileProps) => {
               priority
               onError={() =>
                 setImgSrc(
-                  "https://cdn3.iconfinder.com/data/icons/essential-rounded/64/Rounded-31-512.png"
+                  "https://cdn3.iconfinder.com/data/icons/essential-rounded/64/Rounded-31-512.png",
                 )
               }
             />
@@ -309,6 +309,7 @@ const ShopProfile = ({ shopData }: ShopProfileProps) => {
                         type="number"
                         className="w-full pl-8 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                         value={profileData.fees}
+                        onWheel={numberInputOnWheelPreventChange}
                         onChange={(e) =>
                           handleInputChange("fees", e.target.value)
                         }

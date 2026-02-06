@@ -23,6 +23,7 @@ const shopSchema = new mongoose.Schema(
       unique: true,
       default: "0000000000",
     },
+    ownerName: { type: String, required: true },
     fees: { type: Number, required: true },
     available: { type: Boolean, default: true },
     address: { type: Object, required: true },
@@ -30,7 +31,7 @@ const shopSchema = new mongoose.Schema(
     slots_booked: { type: Object, default: {} },
     availableSlots: { type: [String], default: [] },
   },
-  { minimize: false }
+  { minimize: false },
 );
 
 const ShopModel = mongoose.models.shop || mongoose.model("shop", shopSchema);
