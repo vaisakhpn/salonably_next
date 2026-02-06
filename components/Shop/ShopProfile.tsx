@@ -60,6 +60,7 @@ const useShopProfile = (initialData: ShopData) => {
     setLoading(true);
     try {
       const updateData = {
+        name: profileData.name,
         phone: profileData.phone,
         fees: profileData.fees,
         address: profileData.address,
@@ -177,9 +178,18 @@ const ShopProfile = ({ shopData }: ShopProfileProps) => {
         <div className="pt-20 px-8 pb-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                {profileData.name}
-              </h1>
+              {isEdit ? (
+                <input
+                  type="text"
+                  className="text-3xl font-bold text-gray-900 border-b-2 border-blue-500 focus:outline-none bg-transparent w-full"
+                  value={profileData.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                />
+              ) : (
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {profileData.name}
+                </h1>
+              )}
               <p className="text-gray-500 mt-1">{profileData.email}</p>
             </div>
 

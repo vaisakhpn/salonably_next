@@ -18,15 +18,15 @@ export async function POST(req: Request) {
     const decoded = jwt.verify(token.value, JWT_SECRET) as any;
     const shopId = decoded.shopId;
 
-    const { phone, fees, address, available, availableSlots } =
+    const { name, phone, fees, address, available, availableSlots } =
       await req.json();
 
     await dbConnect();
 
     const updatedShop = await ShopModel.findByIdAndUpdate(
       shopId,
-      { phone, fees, address, available, availableSlots },
-      { new: true }
+      { name, phone, fees, address, available, availableSlots },
+      { new: true },
     );
 
     if (!updatedShop) {
@@ -35,13 +35,13 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { message: "Profile updated successfully", shop: updatedShop },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     console.error("Update profile error:", error);
     return NextResponse.json(
       { message: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

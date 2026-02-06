@@ -6,6 +6,7 @@ import React from "react";
 interface PageProps {
   searchParams: Promise<{
     query?: string;
+    page?: string;
   }>;
 }
 
@@ -18,7 +19,10 @@ export const metadata: Metadata = {
 };
 
 const page = async ({ searchParams }: PageProps) => {
-  const { query } = await searchParams;
+  const { query, page } = await searchParams;
+  const pageNumber = parseInt(page || "1", 10);
+  const pageSize = 8; // Adjust as needed
+  const skip = (pageNumber - 1) * pageSize;
 
   await dbConnect();
 
@@ -38,14 +42,21 @@ const page = async ({ searchParams }: PageProps) => {
     };
   }
 
-  const shops = await ShopModel.find(filter).lean();
+  const totalShops = await ShopModel.countDocuments(filter);
+  const totalPages = Math.ceil(totalShops / pageSize);
+
+  const shops = await ShopModel.find(filter).skip(skip).limit(pageSize).lean();
 
   // Serialize for Client Component
   const serializedShops = JSON.parse(JSON.stringify(shops));
 
   return (
     <div>
-      <AllShops shops={serializedShops} />
+      <AllShops
+        shops={serializedShops}
+        currentPage={pageNumber}
+        totalPages={totalPages}
+      />
     </div>
   );
 };
