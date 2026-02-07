@@ -272,22 +272,35 @@ const Booking: React.FC<BookingProps> = ({ shopData }) => {
           <div className="mt-10">
             <h2 className="font-medium text-gray-700 mb-4">Booking Slots</h2>
 
-            <div className="flex gap-4 overflow-x-auto">
-              {shopSlots.map((slot, index) => (
-                <div
-                  key={index}
-                  onClick={() => {
-                    setSlotIndex(index);
-                    setSlotTime("");
-                  }}
-                  className={`cursor-pointer min-w-[70px] text-center py-4 rounded-full ${
-                    slotIndex === index ? "bg-blue-500 text-white" : "border"
-                  }`}
-                >
-                  <p>{slot.day}</p>
-                  <p>{slot.date}</p>
-                </div>
-              ))}
+            <div className="flex gap-4 overflow-x-auto pb-4 p-2">
+              {shopSlots.map((slot, index) => {
+                const isToday = index === 0;
+                return (
+                  <div
+                    key={index}
+                    onClick={() => {
+                      if (isToday) {
+                        setSlotIndex(index);
+                        setSlotTime("");
+                      }
+                    }}
+                    className={`cursor-pointer min-w-[70px] text-center p-2  rounded-md transition-all duration-200 ${
+                      slotIndex === index
+                        ? "bg-blue-500 text-white shadow-md scale-105"
+                        : "border border-gray-200 hover:border-blue-300"
+                    } ${
+                      !isToday
+                        ? "opacity-50 text-gray-500  grayscale pointer-events-none select-none"
+                        : ""
+                    }`}
+                  >
+                    <p className="text-xs font-medium">{slot.day}</p>
+                    <p className="text-sm font-bold">
+                      {slot.date.split(" ")[0]}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
 
             <div className="flex gap-3 mt-6 overflow-x-auto">
