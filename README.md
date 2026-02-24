@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+💇‍♂️ Salonably – Smart Salon Booking Platform
 
-## Getting Started
+Salonably is a full-stack salon booking platform that allows users to book appointments online and enables shop owners to manage their salons, time slots, and bookings efficiently.
 
-First, run the development server:
+Built using Next.js, TypeScript and MongoDB, the system provides secure authentication, role-based access control, and real-time slot management.
 
-```bash
+🚀 Live Demo
+
+🔗 Live: https://www.salonably.shop/
+
+🔗 GitHub: https://github.com/vaisakhpn/salonably_next
+
+🎯 Key Features
+👤 User Features
+
+Browse registered salons
+
+View available time slots
+
+Book and cancel appointments
+
+Secure login and authentication
+
+🏪 Shop Owner Features
+
+Create and manage salon profile
+
+Add, edit, and delete time slots
+
+View bookings
+
+Manage availability using dynamic 3-day rolling slot system
+
+🔐 Authentication & Security
+
+JWT-based authentication
+
+Role-Based Access Control (User / Shop Owner)
+
+Protected routes
+
+🛠 Tech Stack
+Frontend
+
+Next.js
+
+React.js
+
+Tailwind CSS
+
+Backend
+
+RESTful APIs
+
+Database
+
+MongoDB Atlas
+
+Deployment
+
+vercel
+
+MongoDB Atlas (Cloud Database)
+
+🧠 Core Concepts Implemented
+
+REST API Design
+
+Role-Based Access Control (RBAC)
+
+Dynamic Slot Generation Logic (3-Day Rolling System)
+
+Authentication Middleware
+
+SPA Architecture
+
+Cloud Deployment
+
+⚙️ Installation & Setup
+1️⃣ Clone the Repository
+git clone https://github.com/yourusername/salonably.git
+cd salonably
+2️⃣ Install Dependencies
+npm install
+3️⃣ Configure Environment Variables
+
+Create a .env.local file and add:
+
+NEXT_PUBLIC_API_URL=your_backend_url
+MONGODB_URI=your_mongodb_connection
+JWT_SECRET=your_secret_key
+4️⃣ Run Development Server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+http://localhost:3000
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+📌 Future Improvements
 
-## Learn More
+Online payment integration
 
-To learn more about Next.js, take a look at the following resources:
+Email/SMS booking notifications
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Mobile app version (React Native)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+👨‍💻 Author
 
-## Deploy on Vercel
+Vaisakh P N
+Full-Stack Developer
+GitHub: https://github.com/vaisakhpn
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+LinkedIn: https://www.linkedin.com/in/vaisakhpn/
