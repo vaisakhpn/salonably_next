@@ -78,7 +78,7 @@ Cloud Deployment
 
 ⚙️ Installation & Setup
 1️⃣ Clone the Repository
-git clone https://github.com/yourusername/salonably.git
+git clone https://github.com/vaisakhpn/salonably_next.git
 cd salonably
 2️⃣ Install Dependencies
 npm install
