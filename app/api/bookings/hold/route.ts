@@ -19,53 +19,91 @@ export async function POST(req: Request) {
 
     await dbConnect();
 
-    // Check if slot is already booked or held actively
-    const existing = await BookingModel.findOne({
-      shopId,
-      slotDate,
-      slotTime,
-      $or: [
-        { status: "booked" },
-        { status: "held", expiresAt: { $gt: new Date() } },
-      ],
-    });
+    const holdToken = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes hold
+    
+    // Check if there is an EXPIRED hold we can atomically take over
+    const expiredHold = await BookingModel.findOneAndUpdate(
+      {
+        shopId,
+        slotDate,
+        slotTime,
+        status: "held",
+        expiresAt: { $lt: new Date() }, // Must be strictly in the past
+      },
+      {
+        $set: {
+          userId: user?._id || null,
+          bookingTime: new Date(),
+          userData: {
+            name: user?.name || "Guest",
+            email: user?.email || "",
+            phone: user?.phone || "",
+          },
+          shopData: {
+            name: shopData?.name || "",
+            address: shopData?.address || {},
+            image: shopData?.image || "",
+          },
+          amount: amount || 0,
+          date: Date.now(),
+          status: "held",
+          expiresAt,
+          holdToken,
+        },
+      },
+      { new: true }
+    );
 
-    if (existing) {
+    if (expiredHold) {
+      // Successfully took over an expired hold!
       return NextResponse.json(
-        { message: "Slot already booked or held by someone else" },
-        { status: 409 },
+        { message: "Slot held successfully", holdToken },
+        { status: 201 }
       );
     }
 
-    const holdToken = crypto.randomUUID();
+    // If there was no expired hold, we try to create a brand new one.
+    // If multiple users try this at the exact same millisecond, MongoDB's 
+    // unique partial index will accept 1 and throw a Duplicate Key Error (11000) for the rest!
+    try {
+      await BookingModel.create({
+        userId: user?._id || null,
+        shopId,
+        slotDate,
+        slotTime,
+        bookingTime: new Date(),
+        userData: {
+          name: user?.name || "Guest",
+          email: user?.email || "",
+          phone: user?.phone || "",
+        },
+        shopData: {
+          name: shopData?.name || "",
+          address: shopData?.address || {},
+          image: shopData?.image || "",
+        },
+        amount: amount || 0,
+        date: Date.now(),
+        status: "held",
+        expiresAt,
+        holdToken,
+      });
 
-    const newHold = await BookingModel.create({
-      userId: user?._id || null, // Optional for hold
-      shopId,
-      slotDate,
-      slotTime,
-      bookingTime: new Date(),
-      userData: {
-        name: user?.name || "Guest",
-        email: user?.email || "",
-        phone: user?.phone || "",
-      },
-      shopData: {
-        name: shopData?.name || "",
-        address: shopData?.address || {},
-        image: shopData?.image || "",
-      },
-      amount: amount || 0,
-      date: Date.now(),
-      status: "held",
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes hold
-      holdToken,
-    });
-
-    return NextResponse.json(
-      { message: "Slot held successfully", holdToken },
-      { status: 201 },
-    );
+      return NextResponse.json(
+        { message: "Slot held successfully", holdToken },
+        { status: 201 }
+      );
+    } catch (createError: any) {
+      // 11000 is MongoDB's Duplicate Key Error
+      if (createError.code === 11000) {
+        return NextResponse.json(
+          { message: "Slot already booked or held by someone else" },
+          { status: 409 }
+        );
+      }
+      throw createError; // Re-throw if it's some other unexpected DB error
+    }
   } catch (error: any) {
     console.error("Hold error:", error);
     return NextResponse.json(

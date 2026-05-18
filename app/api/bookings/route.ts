@@ -100,31 +100,41 @@ export async function POST(req: Request) {
       );
     }
 
-    const newBooking = await BookingModel.create({
-      userId: user._id,
-      shopId,
-      slotDate,
-      slotTime,
-      bookingTime: new Date(),
-      userData: {
-        name: user.name,
-        email: user.email,
-        phone: user.phone || "",
-      },
-      shopData: {
-        name: shopData.name,
-        address: shopData.address,
-        image: shopData.image,
-      },
-      amount,
-      date: Date.now(),
-      status: "booked",
-    });
+    try {
+      const newBooking = await BookingModel.create({
+        userId: user._id,
+        shopId,
+        slotDate,
+        slotTime,
+        bookingTime: new Date(),
+        userData: {
+          name: user.name,
+          email: user.email,
+          phone: user.phone || "",
+        },
+        shopData: {
+          name: shopData.name,
+          address: shopData.address,
+          image: shopData.image,
+        },
+        amount,
+        date: Date.now(),
+        status: "booked",
+      });
 
-    return NextResponse.json(
-      { message: "Booking successful", booking: newBooking },
-      { status: 201 },
-    );
+      return NextResponse.json(
+        { message: "Booking successful", booking: newBooking },
+        { status: 201 },
+      );
+    } catch (createError: any) {
+      if (createError.code === 11000) {
+        return NextResponse.json(
+          { message: "Slot already booked or held" },
+          { status: 409 }
+        );
+      }
+      throw createError;
+    }
   } catch (error: any) {
     console.error("Booking error:", error);
     return NextResponse.json(

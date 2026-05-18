@@ -27,6 +27,15 @@ const bookingSchema = new mongoose.Schema({
   holdToken: { type: String },
 });
 
+// Enforce that a slot can only have ONE active booking or hold at a time.
+bookingSchema.index(
+  { shopId: 1, slotDate: 1, slotTime: 1 },
+  { 
+    unique: true, 
+    partialFilterExpression: { status: { $in: ["booked", "held"] } } 
+  }
+);
+
 const BookingModel =
   mongoose.models.booking || mongoose.model("booking", bookingSchema);
 
