@@ -2,6 +2,8 @@ import Booking from "@/components/ui/shop/Booking";
 import React from "react";
 import dbConnect from "@/server/db/mongodb";
 import ShopModel from "@/server/models/Shop";
+import BookingModel from "@/server/models/Booking";
+import { getUser } from "@/server/middleware/auth";
 
 import { Metadata } from "next";
 
@@ -36,13 +38,10 @@ export async function generateMetadata({
   };
 }
 
-import BookingModel from "@/server/models/Booking";
-import { getUser } from "@/server/middleware/auth";
-
 const Page = async ({ params }: PageProps) => {
   const { shopId } = await params;
   await dbConnect();
-  
+
   // Parallel fetch shop data, occupied slots, and user status
   const [shop, user, activeBookings] = await Promise.all([
     ShopModel.findById(shopId).lean(),
@@ -51,9 +50,11 @@ const Page = async ({ params }: PageProps) => {
       shopId,
       $or: [
         { status: "booked" },
-        { status: "held", expiresAt: { $gt: new Date() } }
-      ]
-    }).select("slotDate slotTime").lean()
+        { status: "held", expiresAt: { $gt: new Date() } },
+      ],
+    })
+      .select("slotDate slotTime")
+      .lean(),
   ]);
 
   if (!shop) {
@@ -74,8 +75,8 @@ const Page = async ({ params }: PageProps) => {
 
   return (
     <div>
-      <Booking 
-        shopData={serializedShop} 
+      <Booking
+        shopData={serializedShop}
         initialOccupiedSlots={initialOccupiedSlots}
         isUserLoggedIn={!!user}
       />
