@@ -20,9 +20,11 @@ const bookingSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["booked", "cancelled", "completed"],
+    enum: ["booked", "cancelled", "completed", "held"],
     default: "booked",
   },
+  expiresAt: { type: Date },
+  holdToken: { type: String },
 });
 
 const BookingModel =

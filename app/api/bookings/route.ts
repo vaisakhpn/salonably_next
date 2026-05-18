@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   try {
     let user = await getUser();
     const body = await req.json();
-    const { shopId, slotDate, slotTime, shopData, amount, guestDetails } = body;
+    const { shopId, slotDate, slotTime, shopData, amount, guestDetails, holdToken } = body;
 
     await dbConnect();
 
@@ -37,23 +37,65 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    if (!shopId || !slotDate || !slotTime || !amount) {
+    if (!shopId || !slotDate || !slotTime || amount === undefined) {
       return NextResponse.json(
         { message: "Missing required fields" },
         { status: 400 },
       );
     }
 
+    if (holdToken) {
+      // Find the held booking and update it
+      const heldBooking = await BookingModel.findOne({
+        shopId,
+        slotDate,
+        slotTime,
+        holdToken,
+        status: "held",
+        expiresAt: { $gt: new Date() },
+      });
+
+      if (!heldBooking) {
+        return NextResponse.json(
+          { message: "Hold expired or invalid. Please try selecting the slot again." },
+          { status: 400 },
+        );
+      }
+
+      // Confirm the booking
+      heldBooking.status = "booked";
+      heldBooking.userId = user._id;
+      heldBooking.userData = {
+        name: user.name,
+        email: user.email,
+        phone: user.phone || "",
+      };
+      // Remove hold fields
+      heldBooking.expiresAt = undefined;
+      heldBooking.holdToken = undefined;
+
+      await heldBooking.save();
+
+      return NextResponse.json(
+        { message: "Booking successful", booking: heldBooking },
+        { status: 201 },
+      );
+    }
+
+    // If no holdToken is provided, fallback to checking and creating directly
     const existing = await BookingModel.findOne({
       shopId,
       slotDate,
       slotTime,
-      status: "booked",
+      $or: [
+        { status: "booked" },
+        { status: "held", expiresAt: { $gt: new Date() } },
+      ],
     });
 
     if (existing) {
       return NextResponse.json(
-        { message: "Slot already booked" },
+        { message: "Slot already booked or held" },
         { status: 409 },
       );
     }

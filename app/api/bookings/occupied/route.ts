@@ -16,12 +16,13 @@ export async function GET(req: Request) {
 
     await dbConnect();
 
-    // Fetch all future or current bookings for this shop that are 'booked'
+    // Fetch all future or current bookings for this shop that are 'booked', or 'held' and unexpired
     const bookings = await BookingModel.find({
       shopId,
-      status: "booked",
-      // Optional: Filter by date to only get future bookings if needed for optimization
-      // but for now, fetching all 'booked' status is safer to ensure correctness
+      $or: [
+        { status: "booked" },
+        { status: "held", expiresAt: { $gt: new Date() } },
+      ],
     }).select("slotDate slotTime");
 
     const occupiedSlots = bookings.map((b) => ({
