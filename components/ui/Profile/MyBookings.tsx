@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface Booking {
   _id: string;
@@ -20,27 +21,10 @@ interface Booking {
   status: string;
 }
 
-const MyBookings = () => {
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+const MyBookings = ({ initialBookings }: { initialBookings: Booking[] }) => {
+  const [bookings, setBookings] = useState<Booking[]>(initialBookings);
+  const router = useRouter();
 
-  const fetchBookings = async () => {
-    try {
-      const res = await fetch("/api/bookings");
-      if (res.ok) {
-        const data = await res.json();
-        setBookings(data.bookings);
-      }
-    } catch (error) {
-      console.error("Failed to fetch bookings", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBookings();
-  }, []);
 
   const handleCancel = async (bookingId: string) => {
     if (!confirm("Are you sure you want to cancel this booking?")) return;
@@ -56,7 +40,11 @@ const MyBookings = () => {
 
       if (res.ok) {
         alert(data.message);
-        fetchBookings(); // Refresh list
+        // Refresh the page data from the server
+        router.refresh(); 
+        
+        // Optimistically update local state so UI updates instantly
+        setBookings(bookings.map(b => b._id === bookingId ? { ...b, status: "cancelled" } : b));
       } else {
         alert(data.message);
       }
@@ -65,9 +53,6 @@ const MyBookings = () => {
     }
   };
 
-  if (loading) {
-    return <div className="p-8 text-center">Loading bookings...</div>;
-  }
 
   if (bookings.length === 0) {
     return (

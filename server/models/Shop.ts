@@ -34,6 +34,13 @@ const shopSchema = new mongoose.Schema(
   { minimize: false },
 );
 
+// Add Text Index for lightning-fast search capabilities
+shopSchema.index({
+  name: "text",
+  "address.line1": "text",
+  "address.line2": "text"
+});
+
 const ShopModel = mongoose.models.shop || mongoose.model("shop", shopSchema);
 
 export default ShopModel;

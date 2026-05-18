@@ -29,16 +29,10 @@ const page = async ({ searchParams }: PageProps) => {
   let filter: any = { available: true };
 
   if (query) {
-    // Simple case-insensitive regex search on name or address line 1
-    // Note: MongoDB regex might be slow on large datasets, but fine for now.
-    const regex = new RegExp(query, "i");
+    // Utilize MongoDB Text Index for lightning-fast search
     filter = {
       ...filter,
-      $or: [
-        { name: regex },
-        { "address.line1": regex },
-        { "address.line2": regex },
-      ],
+      $text: { $search: query }
     };
   }
 

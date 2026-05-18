@@ -9,9 +9,11 @@ import slider_img from "@/assets/hero.png"; // Fallback image
 
 interface BookingProps {
   shopData: any;
+  initialOccupiedSlots: { date: string; time: string }[];
+  isUserLoggedIn: boolean;
 }
 
-const Booking: React.FC<BookingProps> = ({ shopData }) => {
+const Booking: React.FC<BookingProps> = ({ shopData, initialOccupiedSlots, isUserLoggedIn }) => {
   const shopInfo = shopData;
 
   if (!shopInfo) {
@@ -21,52 +23,16 @@ const Booking: React.FC<BookingProps> = ({ shopData }) => {
   const [slotTime, setSlotTime] = useState("");
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(isUserLoggedIn);
   const [occupiedSlots, setOccupiedSlots] = useState<
     { date: string; time: string }[]
-  >([]);
+  >(initialOccupiedSlots);
   const [bookingDetails, setBookingDetails] = useState<null | {
     date: string;
     time: string;
   }>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    const fetchOccupiedSlots = async () => {
-      try {
-        const res = await fetch(
-          `/api/bookings/occupied?shopId=${shopInfo._id}`,
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setOccupiedSlots(data.occupiedSlots);
-        }
-      } catch (error) {
-        console.error("Failed to fetch occupied slots", error);
-      }
-    };
-
-    if (shopInfo._id) {
-      fetchOccupiedSlots();
-    }
-  }, [shopInfo._id]);
-
-  useEffect(() => {
-    const checkLogin = async () => {
-      try {
-        const res = await fetch("/api/bookings");
-        if (res.status === 401) {
-          setIsLoggedIn(false);
-        } else {
-          setIsLoggedIn(true);
-        }
-      } catch (e) {
-        setIsLoggedIn(false);
-      }
-    };
-    checkLogin();
-  }, []);
 
   const isSlotOccupied = (date: string, time: string) => {
     return occupiedSlots.some(
@@ -248,6 +214,7 @@ const Booking: React.FC<BookingProps> = ({ shopData }) => {
               alt="shop"
               width={300}
               height={300}
+              priority
               className="rounded-lg object-cover"
             />
 
