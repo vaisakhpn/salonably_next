@@ -1,7 +1,8 @@
 import AllShops from "@/components/ui/shop/AllShops";
 import dbConnect from "@/server/db/mongodb";
 import ShopModel from "@/server/models/Shop";
-import React from "react";
+import React, { Suspense } from "react";
+import Loading from "./loading";
 
 interface PageProps {
   searchParams: Promise<{
@@ -18,9 +19,13 @@ export const metadata: Metadata = {
     "Explore our extensive list of top-rated salons and book your appointment today.",
 };
 
-const page = async ({ searchParams }: PageProps) => {
-  const { query, page } = await searchParams;
-  const pageNumber = parseInt(page || "1", 10);
+const ShopsListContent = async ({
+  query,
+  pageNumber,
+}: {
+  query?: string;
+  pageNumber: number;
+}) => {
   const pageSize = 8; // Adjust as needed
   const skip = (pageNumber - 1) * pageSize;
 
@@ -50,12 +55,24 @@ const page = async ({ searchParams }: PageProps) => {
   const serializedShops = JSON.parse(JSON.stringify(shops));
 
   return (
+    <AllShops
+      shops={serializedShops}
+      currentPage={pageNumber}
+      totalPages={totalPages}
+    />
+  );
+};
+
+const page = async ({ searchParams }: PageProps) => {
+  const { query, page } = await searchParams;
+  const pageNumber = parseInt(page || "1", 10);
+  const key = `${query || ""}_${pageNumber}`;
+
+  return (
     <div>
-      <AllShops
-        shops={serializedShops}
-        currentPage={pageNumber}
-        totalPages={totalPages}
-      />
+      <Suspense key={key} fallback={<Loading />}>
+        <ShopsListContent query={query} pageNumber={pageNumber} />
+      </Suspense>
     </div>
   );
 };
