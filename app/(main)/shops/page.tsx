@@ -29,10 +29,15 @@ const page = async ({ searchParams }: PageProps) => {
   let filter: any = { available: true };
 
   if (query) {
-    // Utilize MongoDB Text Index for lightning-fast search
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const regex = new RegExp(escapedQuery, "i");
     filter = {
       ...filter,
-      $text: { $search: query }
+      $or: [
+        { name: { $regex: regex } },
+        { "address.line1": { $regex: regex } },
+        { "address.line2": { $regex: regex } },
+      ],
     };
   }
 
