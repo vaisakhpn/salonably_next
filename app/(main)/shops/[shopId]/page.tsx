@@ -31,7 +31,7 @@ export async function generateMetadata({
     title: shop.name,
     description: shop.about || `Book an appointment at ${shop.name}.`,
     openGraph: {
-      title: `${shop.name} | Salonably`,
+      title: `${shop.name} | LockMyTime`,
       description: shop.about || `Book an appointment at ${shop.name}.`,
       images: shop.image ? [shop.image] : [],
     },

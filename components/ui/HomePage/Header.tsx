@@ -19,7 +19,7 @@ const Header = () => {
       {/*---left/text---*/}
       <div className="md:w-1/2 order-2 md:order-1 flex flex-col items-start justify-center gap-2 py-10 m-auto md:py-[10vw] md:mb-[-30px]">
         <p className="text-3xl md:text-4xl lg:text-5xl text-white font-semibold leading-tight md:leading-tight lg:leading-tight">
-          <span className="sm:text-3xl text-xl ">Welcome to</span> Salonably
+          <span className="sm:text-3xl text-xl ">Welcome to</span> LockMyTime
           <br /> <span className="sm:text-3xl text-xl">Glam Up with us</span>
         </p>
         <div className="flex flex-col md:flex-row items-center gap-3 text-white text-sm font-light">

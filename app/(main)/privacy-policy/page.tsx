@@ -59,7 +59,7 @@ const PrivacyPolicy = () => {
             If you have any questions about this Privacy Policy, please contact
             us at:
             <br />
-            Email: support@salonably.com
+            Email: support@lockmytime.shop
             <br />
             Phone: +91 7559092281
           </p>

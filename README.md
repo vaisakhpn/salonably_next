@@ -1,14 +1,15 @@
-💇‍♂️ Salonably – Smart Salon Booking Platform
+💇‍♂️ LockMyTime – Smart Appointment Booking Platform
 
-Salonably is a full-stack salon booking platform that allows users to book appointments online and enables shop owners to manage their salons, time slots, and bookings efficiently.
+LockMyTime is a full-stack salon and appointment booking platform that allows users to book appointments online and enables shop owners to manage their salons, time slots, and bookings efficiently.
 
 Built using Next.js, TypeScript and MongoDB, the system provides secure authentication, role-based access control, and real-time slot management.
 
 🚀 Live Demo
 
-🔗 Live: https://www.salonably.shop/
+🔗 Live: https://www.lockmytime.shop/
 
 🔗 GitHub: https://github.com/vaisakhpn/salonably_next
+
 
 🎯 Key Features
 👤 User Features

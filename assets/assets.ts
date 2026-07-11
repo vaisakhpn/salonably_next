@@ -12,7 +12,7 @@ import appointments_icon from "./appointments_icon.svg";
 import earning_icon from "./earning_icon.svg";
 import customers_icon from "./customers_icon.svg";
 import allShop from "./allshop.svg";
-import salonably from "./salonably.png";
+import salonably from "./LockMyTime.png";
 import info_icon from "./info_icon.svg";
 import dropdown_icon from "./dropdown_icon.svg";
 

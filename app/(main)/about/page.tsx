@@ -13,7 +13,7 @@ const About = () => {
         <Image src={about} alt="image" className="w-full md:max-w-[360px]" />
         <div className="flex flex-col justify-center gap-6 md:w-2/4 text-sm text-gray-600">
           <p>
-            Welcome to Salonably, your one-stop destination for effortless salon
+            Welcome to LockMyTime, your one-stop destination for effortless salon
             and beauty appointments. We aim to bridge the gap between customers
             and salon professionals by providing a user-friendly platform that
             makes scheduling beauty services faster, easier, and more convenient

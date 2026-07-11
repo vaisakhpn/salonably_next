@@ -1,7 +1,7 @@
 export default function sitemap() {
   return [
     {
-      url: "https://salonably.shop",
+      url: "https://lockmytime.shop",
       lastModified: new Date(),
     },
   ];

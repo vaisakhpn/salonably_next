@@ -12,19 +12,19 @@ const outfit = Outfit({
 
 export const metadata: Metadata = {
   title: {
-    default: "Salonably - Book Your Next Salon Appointment",
-    template: "%s | Salonably",
+    default: "LockMyTime - Book Your Next Appointment",
+    template: "%s | LockMyTime",
   },
   description:
-    "Book nearby salons instantly. Easy, fast, and hassle-free beauty appointments with Salonably.",
+    "Book appointments instantly. Easy, fast, and hassle-free scheduling with LockMyTime.",
   keywords: ["salon", "booking", "beauty", "haircut", "spa", "appointment"],
   openGraph: {
-    title: "Salonably - Book Your Next Salon Appointment",
+    title: "LockMyTime - Book Your Next Appointment",
     description:
-      "Book nearby salons instantly. Easy, fast, and hassle-free beauty appointments with Salonably.",
+      "Book appointments instantly. Easy, fast, and hassle-free scheduling with LockMyTime.",
     type: "website",
     locale: "en_US",
-    siteName: "Salonably",
+    siteName: "LockMyTime",
   },
 };
 

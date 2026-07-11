@@ -1,6 +1,6 @@
 import SearchBox from "./SearchBox";
 
-import salonably from "../../assets/salonably.png";
+import lockmytime from "../../assets/LockMyTime.png";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -18,9 +18,9 @@ const Navbar = async () => {
       <header className="flex flex-row gap-3  justify-between items-center max-w-6xl mx-auto  p-4 ">
         <Link className="text-black font-bold text-xl sm:text-3xl" href="/">
           <Image
-            src={salonably}
-            className="sm:w-16 w-10  rounded-full"
-            alt=""
+            src={lockmytime}
+            className="sm:w-20 w-10  rounded-full"
+            alt="LockMyTime Logo"
           />
         </Link>
         <div className="flex-1 max-w-md mx-auto">

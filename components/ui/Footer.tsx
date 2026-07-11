@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import salonably from "@/assets/salonably.png";
+import lockmytime from "@/assets/LockMyTime.png";
 
 const Footer = () => {
   return (
@@ -8,9 +8,9 @@ const Footer = () => {
       <div className="flex flex-col border-t-2 p-2 sm:grid sm:grid-cols-[3fr_1fr_1fr] gap-14 my-10 mt-40 text-sm">
         {/* Logo & Description */}
         <div>
-          <Image className="mb-5 w-14" src={salonably} alt="LOGO" />
+          <Image className="mb-5 w-16" src={lockmytime} alt="LockMyTime Logo" />
           <p className="w-full md:w-2/3 text-gray-600 leading-6">
-            Salonably helps you find and book nearby salons in seconds. Fast,
+            LockMyTime helps you find and book nearby salons in seconds. Fast,
             easy, and hassle-free beauty appointments—anytime, anywhere.
           </p>
         </div>
@@ -54,7 +54,7 @@ const Footer = () => {
 
       <hr />
       <p className="text-center text-sm text-gray-500 py-4">
-        © 2025 Salonably. All Rights Reserved.
+        © 2026 LockMyTime. All Rights Reserved.
       </p>
     </div>
   );
