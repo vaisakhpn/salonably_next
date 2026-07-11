@@ -1,4 +1,14 @@
 import mongoose from "mongoose";
+import dns from "dns";
+
+// Resolve local router DNS querySrv ECONNREFUSED errors in dev mode by using Google DNS
+if (process.env.NODE_ENV === "development") {
+  try {
+    dns.setServers(["8.8.8.8", "8.8.4.4"]);
+  } catch (err) {
+    console.warn("Failed to set DNS servers:", err);
+  }
+}
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
