@@ -70,16 +70,37 @@ const AllShops = ({ shops }: AllShopsProps) => {
   };
 
   return (
-    <div className="m-5 max-h-[90vh] overflow-y-scroll">
-      <h1 className="text-lg font-medium ">All Shops</h1>
-      <div className="w-full flex flex-wrap gap-4 pt-5 gap-y-6">
-        {shops.map((item, index) => (
-          <ShopItem
-            key={index}
-            item={item}
-            changeAvailability={changeAvailability}
-          />
-        ))}
+    <div className="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto space-y-4">
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
+            All Shops
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-500">
+            View and toggle vendor availability
+          </p>
+        </div>
+        {shops && (
+          <span className="bg-purple-50 text-purple-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-purple-100">
+            {shops.length} Shops
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        {shops && shops.length > 0 ? (
+          shops.map((item, index) => (
+            <ShopItem
+              key={item._id || index}
+              item={item}
+              changeAvailability={changeAvailability}
+            />
+          ))
+        ) : (
+          <div className="col-span-full p-8 text-center text-gray-400 text-sm font-medium bg-white rounded-2xl border border-gray-100">
+            No shops found
+          </div>
+        )}
       </div>
     </div>
   );
