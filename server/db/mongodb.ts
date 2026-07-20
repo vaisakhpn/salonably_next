@@ -4,9 +4,10 @@ import dns from "dns";
 // Resolve local router DNS querySrv ECONNREFUSED errors in dev mode by using Google DNS
 if (process.env.NODE_ENV === "development") {
   try {
+    dns.setDefaultResultOrder("ipv4first");
     dns.setServers(["8.8.8.8", "8.8.4.4"]);
   } catch (err) {
-    console.warn("Failed to set DNS servers:", err);
+    console.warn("Failed to set DNS configuration:", err);
   }
 }
 

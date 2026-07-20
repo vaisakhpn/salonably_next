@@ -11,11 +11,11 @@ const layout = async ({ children }: { children: React.ReactNode }) => {
   }
 
   return (
-    <div className="bg-[#F8F9FD]">
+    <div className="bg-[#F8F9FD] min-h-screen">
       <Navbar shopName={shop.name} />
       <div className="flex items-start">
         <Sidebar />
-        <div>{children}</div>
+        <div className="flex-1 w-full pb-24 md:pb-6 overflow-x-hidden">{children}</div>
       </div>
     </div>
   );

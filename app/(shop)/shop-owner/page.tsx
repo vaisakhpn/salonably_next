@@ -59,8 +59,11 @@ const page = async () => {
     .limit(5)
     .lean();
 
+  const shop = await ShopModel.findById(shopId).select("name").lean();
+
   const dashData = {
-    shops: 1, // It's just this shop
+    shopName: shop?.name || "Shop Owner",
+    shops: 1,
     bookings: bookingsCount,
     customers: distinctUsers.length,
     latestBookings: JSON.parse(JSON.stringify(latestBookings)),
