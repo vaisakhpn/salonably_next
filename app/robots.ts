@@ -1,6 +1,6 @@
 export default function robots() {
   return {
     rules: [{ userAgent: "*", allow: "/" }],
-    sitemap: "https://lockmytime.shop/sitemap.xml",
+    sitemap: "https://www.lockmytime.shop/sitemap.xml",
   };
 }

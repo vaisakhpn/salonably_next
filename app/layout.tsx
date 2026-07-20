@@ -11,21 +11,58 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.lockmytime.shop"),
   title: {
     default: "LockMyTime - Book Your Next Appointment",
     template: "%s | LockMyTime",
   },
   description:
     "Book appointments instantly. Easy, fast, and hassle-free scheduling with LockMyTime.",
-  keywords: ["salon", "booking", "beauty", "haircut", "spa", "appointment"],
+  keywords: [
+    "LockMyTime",
+    "lockmytime",
+    "Lock My Time",
+    "lock my time",
+    "salon",
+    "booking",
+    "beauty",
+    "haircut",
+    "spa",
+    "appointment",
+  ],
+  alternates: {
+    canonical: "./",
+  },
   openGraph: {
     title: "LockMyTime - Book Your Next Appointment",
     description:
       "Book appointments instantly. Easy, fast, and hassle-free scheduling with LockMyTime.",
+    url: "https://www.lockmytime.shop",
     type: "website",
     locale: "en_US",
     siteName: "LockMyTime",
   },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://www.lockmytime.shop/#website",
+      "url": "https://www.lockmytime.shop",
+      "name": "LockMyTime",
+      "description":
+        "Book appointments instantly. Easy, fast, and hassle-free scheduling with LockMyTime.",
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.lockmytime.shop/#organization",
+      "name": "LockMyTime",
+      "url": "https://www.lockmytime.shop",
+      "logo": "https://www.lockmytime.shop/favicon.ico",
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -35,6 +72,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body
         className={`${outfit.variable} font-main`}
         suppressHydrationWarning={true}
