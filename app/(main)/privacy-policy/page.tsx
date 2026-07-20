@@ -1,4 +1,11 @@
 import React from "react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "Read the privacy policy for LockMyTime. Learn how we handle, collect, and protect your personal data.",
+};
 
 const PrivacyPolicy = () => {
   return (

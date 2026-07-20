@@ -1,5 +1,12 @@
 import about from "@/assets/s1.png";
 import Image from "next/image";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About Us",
+  description:
+    "Learn more about LockMyTime and our mission to simplify salon and beauty appointment bookings.",
+};
 
 const About = () => {
   return (

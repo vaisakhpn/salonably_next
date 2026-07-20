@@ -1,6 +1,13 @@
 import React from "react";
 import contact from "@/assets/s3.png";
 import Image from "next/image";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contact Us",
+  description:
+    "Get in touch with LockMyTime. Reach out for support, inquiries, or salon partnerships.",
+};
 
 const Contact = () => {
   return (
