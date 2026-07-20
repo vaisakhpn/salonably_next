@@ -3,6 +3,8 @@ import TopShops from "@/components/ui/HomePage/TopShops";
 import Banner from "@/components/ui/HomePage/Banner";
 import TopShopsSkeleton from "@/components/ui/HomePage/TopShopsSkeleton";
 import Header from "@/components/ui/HomePage/Header";
+import StatsBanner from "@/components/ui/HomePage/StatsBanner";
+import ExploreServices from "@/components/ui/HomePage/ExploreServices";
 import DiscoverPage from "@/components/ui/HomePage/DiscoverPage";
 
 import { Metadata } from "next";
@@ -47,12 +49,24 @@ export const metadata: Metadata = {
 const page = () => {
   return (
     <div>
-      <Header />
-      <Suspense fallback={<TopShopsSkeleton />}>
-        <TopShops />
-      </Suspense>
-      <DiscoverPage />
-      <Banner />
+      {/* Desktop Homepage Layout (>= md) */}
+      <div className="hidden md:block space-y-12">
+        <Header />
+        <StatsBanner />
+        <ExploreServices />
+        <Suspense fallback={<TopShopsSkeleton />}>
+          <TopShops />
+        </Suspense>
+        <DiscoverPage />
+        <Banner />
+      </div>
+
+      {/* Mobile & Tablet App-Style Homepage Layout (< md) */}
+      <div className="block md:hidden">
+        <Suspense fallback={<TopShopsSkeleton />}>
+          <TopShops />
+        </Suspense>
+      </div>
     </div>
   );
 };

@@ -1,53 +1,54 @@
-import MyBookings from '@/components/ui/Profile/MyBookings'
-import React from 'react'
-import dbConnect from '@/server/db/mongodb'
-import BookingModel from '@/server/models/Booking'
-import { getUser } from '@/server/middleware/auth'
-import { redirect } from 'next/navigation'
+import MyBookings from "@/components/ui/Profile/MyBookings";
+import React from "react";
+import dbConnect from "@/server/db/mongodb";
+import BookingModel from "@/server/models/Booking";
+import { getUser } from "@/server/middleware/auth";
+import { redirect } from "next/navigation";
+import { parseSlotDateTime } from "@/lib/utils";
 
 const page = async () => {
   const user = await getUser();
   if (!user) {
-    redirect('/login');
+    redirect("/login");
   }
 
   await dbConnect();
 
-  let bookings = await BookingModel.find({ userId: user._id }).sort({
-    createdAt: -1,
-  });
+  // Fast lean query
+  const bookingsData = await BookingModel.find({ userId: user._id })
+    .sort({ createdAt: -1 })
+    .lean();
 
+  const bookings = JSON.parse(JSON.stringify(bookingsData));
+
+  // Compute status and update past bookings in background
   const now = new Date();
-  const currentYear = now.getFullYear();
-  const updates = [];
+  const pastUncompletedIds: string[] = [];
 
-  for (const booking of bookings) {
+  bookings.forEach((booking: any) => {
     if (booking.status === "booked") {
-      try {
-        const dateString = `${booking.slotDate} ${currentYear} ${booking.slotTime}`;
-        const bookingDateTime = new Date(dateString);
-
-        if (bookingDateTime < now) {
-          booking.status = "completed";
-          booking.isCompleted = true;
-          updates.push(booking.save());
-        }
-      } catch (e) {
-        console.error("Error parsing date for booking:", booking._id, e);
+      const slotDateTime = parseSlotDateTime(booking.slotDate, booking.slotTime);
+      if (slotDateTime && slotDateTime < now) {
+        booking.status = "completed";
+        booking.isCompleted = true;
+        pastUncompletedIds.push(booking._id);
       }
     }
-  }
+  });
 
-  if (updates.length > 0) {
-    await Promise.all(updates);
+  if (pastUncompletedIds.length > 0) {
+    // Non-blocking background update
+    BookingModel.updateMany(
+      { _id: { $in: pastUncompletedIds } },
+      { $set: { status: "completed", isCompleted: true } }
+    ).catch((err) => console.error("Error updating past bookings:", err));
   }
-
-  // Serialize to pass to Client Component
-  const serializedBookings = JSON.parse(JSON.stringify(bookings));
 
   return (
-    <div><MyBookings initialBookings={serializedBookings} /></div>
-  )
-}
+    <div>
+      <MyBookings initialBookings={bookings} />
+    </div>
+  );
+};
 
-export default page
+export default page;

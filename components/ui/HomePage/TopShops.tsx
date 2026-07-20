@@ -2,6 +2,7 @@ import Link from "next/link";
 import dbConnect from "@/server/db/mongodb";
 import ShopModel from "@/server/models/Shop";
 import ShopCard from "../ShopCard";
+import MobileHomePage from "./MobileHomePage";
 
 const TopShops = async () => {
   await dbConnect();
@@ -14,28 +15,42 @@ const TopShops = async () => {
 
   const shops = JSON.parse(JSON.stringify(shopsData));
 
-  // Serialize for client component (if ShopCard was client, but it's not strictly required here as it's rendered in server component)
-  // However, passing lean() result is usually fine for server components.
-  // We need to map to match ShopData interface if there are discrepancies, but ShopModel matches well.
-
   return (
-    <div className="flex flex-col items-center gap-4 my-16 text-gray-900 md:mx-10">
-      <h1 className="text-3xl font-bold text-gray-900">Top Salons to Book</h1>
-      <p className="sm:w-1/3 text-center text-gray-500 text-sm">
-        Simply browse through our extensive list of salon shops.
-      </p>
-      <div className="w-full grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-5 px-3 sm:px-0">
-        {shops.map((shop: any) => (
-          <ShopCard key={shop._id} shop={shop} />
-        ))}
+    <>
+      {/* Mobile & Tablet View (< md) */}
+      <MobileHomePage shops={shops} />
+
+      {/* Desktop View (>= md) */}
+      <div className="hidden md:block my-12 max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
+        {/* Section Header */}
+        <div className="flex items-end justify-between border-b border-gray-100 pb-4">
+          <div>
+            <h2 className="text-xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+              Top Rated Salons Near You
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+              Handpicked top-rated beauty and wellness spots
+            </p>
+          </div>
+          <Link
+            href="/shops"
+            className="text-xs sm:text-sm font-bold text-blue-600 hover:underline flex items-center gap-1 shrink-0"
+          >
+            <span>View all</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
+
+        {/* Grid Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {shops.map((shop: any) => (
+            <ShopCard key={shop._id} shop={shop} />
+          ))}
+        </div>
       </div>
-      <Link
-        href="/shops"
-        className="bg-blue-50 text-blue-600 font-medium px-8 py-3 rounded-full mt-8 hover:bg-blue-100 transition-colors"
-      >
-        View All Salons
-      </Link>
-    </div>
+    </>
   );
 };
 
