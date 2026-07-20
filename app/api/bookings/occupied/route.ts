@@ -23,7 +23,9 @@ export async function GET(req: Request) {
         { status: "booked" },
         { status: "held", expiresAt: { $gt: new Date() } },
       ],
-    }).select("slotDate slotTime");
+    })
+      .select("slotDate slotTime")
+      .lean();
 
     const occupiedSlots = bookings.map((b) => ({
       date: b.slotDate,

@@ -46,10 +46,12 @@ const ShopsListContent = async ({
     };
   }
 
-  const totalShops = await ShopModel.countDocuments(filter);
-  const totalPages = Math.ceil(totalShops / pageSize);
+  const [totalShops, shops] = await Promise.all([
+    ShopModel.countDocuments(filter),
+    ShopModel.find(filter).skip(skip).limit(pageSize).lean(),
+  ]);
 
-  const shops = await ShopModel.find(filter).skip(skip).limit(pageSize).lean();
+  const totalPages = Math.ceil(totalShops / pageSize);
 
   // Serialize for Client Component
   const serializedShops = JSON.parse(JSON.stringify(shops));

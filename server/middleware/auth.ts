@@ -18,7 +18,7 @@ export async function getUser() {
     const decoded = jwt.verify(token.value, JWT_SECRET) as { userId: string };
 
     await dbConnect();
-    const user = await User.findById(decoded.userId).select("-password");
+    const user = await User.findById(decoded.userId).select("-password").lean();
 
     if (!user) return null;
 
@@ -27,7 +27,7 @@ export async function getUser() {
       name: user.name,
       email: user.email,
       image: user.image,
-      _id: user._id.toString(),
+      _id: (user._id as any).toString(),
       phone: user.phone,
     };
   } catch (error) {
@@ -47,7 +47,7 @@ export async function getShop() {
     const decoded = jwt.verify(token.value, JWT_SECRET) as { shopId: string };
 
     await dbConnect();
-    const shop = await ShopModel.findById(decoded.shopId).select("-password");
+    const shop = await ShopModel.findById(decoded.shopId).select("-password").lean();
 
     if (!shop) return null;
 
