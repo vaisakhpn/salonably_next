@@ -241,29 +241,25 @@ const Booking: React.FC<BookingProps> = ({ shopData, initialOccupiedSlots, isUse
 
             <div className="flex gap-4 overflow-x-auto pb-4 p-2">
               {shopSlots.map((slot, index) => {
-                const isToday = index === 0;
                 return (
                   <div
                     key={index}
                     onClick={() => {
-                      if (isToday) {
-                        setSlotIndex(index);
-                        setSlotTime("");
-                      }
+                      setSlotIndex(index);
+                      setSlotTime("");
                     }}
-                    className={`cursor-pointer min-w-[70px] text-center p-2  rounded-md transition-all duration-200 ${
+                    className={`cursor-pointer min-w-[70px] text-center p-2.5 rounded-xl transition-all duration-200 ${
                       slotIndex === index
-                        ? "bg-blue-500 text-white shadow-md scale-105"
-                        : "border border-gray-200 hover:border-blue-300"
-                    } ${
-                      !isToday
-                        ? "opacity-50 text-gray-500  grayscale pointer-events-none select-none"
-                        : ""
+                        ? "bg-blue-600 text-white shadow-md scale-105"
+                        : "bg-white border border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50/50"
                     }`}
                   >
-                    <p className="text-xs font-medium">{slot.day}</p>
-                    <p className="text-sm font-bold">
+                    <p className="text-xs font-semibold uppercase">{slot.day}</p>
+                    <p className="text-sm font-extrabold mt-0.5">
                       {slot.date.split(" ")[0]}
+                    </p>
+                    <p className="text-[10px] font-medium opacity-80">
+                      {slot.date.split(" ")[1]}
                     </p>
                   </div>
                 );
