@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import lockmytime from "@/assets/LockMyTime.png";
 
 const Login = () => {
@@ -72,7 +73,7 @@ const Login = () => {
 
           {/* Top Brand Header */}
           <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-8">
+            <Link href="/" className="inline-flex items-center gap-3 mb-8 cursor-pointer hover:opacity-90 transition-opacity">
               <Image
                 src={lockmytime}
                 alt="LockMyTime Logo"
@@ -86,7 +87,7 @@ const Login = () => {
                   Salon & Appointment Booking
                 </span>
               </div>
-            </div>
+            </Link>
 
             <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
               Book Your Perfect <br />
@@ -154,20 +155,20 @@ const Login = () => {
             <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-48 bg-blue-200/20 rounded-full blur-2xl pointer-events-none" />
             
             <div className="relative z-10 flex flex-col items-center">
-              {/* Logo */}
-              <div className="relative mb-2">
+              {/* Logo Link */}
+              <Link href="/" className="relative mb-2 inline-block cursor-pointer hover:opacity-90 transition-opacity">
                 <Image
                   src={lockmytime}
                   alt="LockMyTime Logo"
                   className="w-14 h-14 rounded-full object-cover shadow-sm border-2 border-white"
                 />
                 <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" />
-              </div>
+              </Link>
 
               {/* Title & Tagline */}
-              <h3 className="font-extrabold text-xl text-gray-900 tracking-tight">
+              <Link href="/" className="font-extrabold text-xl text-gray-900 tracking-tight cursor-pointer hover:text-blue-600 transition-colors">
                 Lock<span className="text-blue-600">MyTime</span>
-              </h3>
+              </Link>
               <p className="text-xs text-gray-500 mt-0.5 max-w-xs mx-auto">
                 Instant Salon & Appointment Booking
               </p>
@@ -215,7 +216,7 @@ const Login = () => {
             
             {/* Desktop Header Tab Toggle (Hidden on Mobile) */}
             <div className="hidden lg:flex items-center justify-between mb-8">
-              <div className="flex items-center gap-2.5">
+              <Link href="/" className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity">
                 <Image
                   src={lockmytime}
                   alt="LockMyTime Logo"
@@ -224,7 +225,7 @@ const Login = () => {
                 <span className="font-extrabold text-2xl text-blue-600 tracking-tight">
                   LockMyTime
                 </span>
-              </div>
+              </Link>
 
               {/* Desktop Segmented Pill Tab Switcher */}
               <div className="bg-slate-100 p-1 rounded-full flex items-center border border-gray-200/80">

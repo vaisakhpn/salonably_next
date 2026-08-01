@@ -1,5 +1,7 @@
 import Dashboard from "@/components/Shop/Dashboard";
 import LoginUser from "@/components/Shop/LoginPage";
+import Navbar from "@/components/ui/Navbar";
+import Footer from "@/components/ui/Footer";
 import React from "react";
 import { cookies } from "next/headers";
 import dbConnect from "@/server/db/mongodb";
@@ -14,7 +16,15 @@ const page = async () => {
   const token = cookieStore.get("shop_token");
 
   if (!token) {
-    return <LoginUser />;
+    return (
+      <div className="min-h-screen flex flex-col justify-between bg-slate-50">
+        <Navbar />
+        <main className="flex-1">
+          <LoginUser />
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   let shopId;
@@ -23,33 +33,21 @@ const page = async () => {
     const decoded = jwt.verify(token.value, JWT_SECRET) as any;
     shopId = decoded.shopId;
   } catch (error) {
-    // Invalid token, render login
-    return <LoginUser />;
+    // Invalid token, render login with Navbar & Footer
+    return (
+      <div className="min-h-screen flex flex-col justify-between bg-slate-50">
+        <Navbar />
+        <main className="flex-1">
+          <LoginUser />
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   await dbConnect();
 
-  // Fetch stats specific to this shop
-  // 1. Bookings for this shop (assuming Booking model has `shopId` or `shopData._id` reference)
-  // Checking Booking schema from previous context or generic assumption:
-  // If BookingModel stores `shopId` directly: { shopId: shopId }
-  // If it stores `shopData`: { "shopData._id": shopId } or similar.
-  // Previous admin dashboard used `BookingModel.find({})`.
-  // Let's assume `docId` (shop id) is stored in `docId` or related field?
-  // Checking admin dashboard code... `item.shopData.image`. So it likely stores `shopData` object.
-  // The safer bet is to query where `shopData._id` matches, if that's how it's stored, or `shopId`.
-  // User provided schema earlier? No, I viewed `Shop.ts` but not `Booking.ts`.
-  // Wait, I viewed `models` directory list step 33.
-  // Let's check Booking model if possible, or assume `shopId`.
-  // Actually, I can just check how `cancel-appointment` works if I had access, but let's query flexibly or update later if empty.
-  // Assumption: Booking has `shopId` field.
-
   const bookingsCount = await BookingModel.countDocuments({ shopId: shopId });
-  const completedBookings = await BookingModel.find({
-    shopId: shopId,
-    isCompleted: true,
-  }); // Customer count? Or users?
-  // "Customers" usually means unique users who booked this shop.
   const distinctUsers = await BookingModel.distinct("userId", {
     shopId: shopId,
   });
