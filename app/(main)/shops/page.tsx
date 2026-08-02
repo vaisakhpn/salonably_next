@@ -61,6 +61,7 @@ const ShopsListContent = async ({
       shops={serializedShops}
       currentPage={pageNumber}
       totalPages={totalPages}
+      query={query}
     />
   );
 };

@@ -1,25 +1,32 @@
 import React from "react";
 import Link from "next/link";
 import ShopCard, { ShopData } from "../ShopCard";
+import ComingSoonArea from "../ComingSoonArea";
 
 interface AllShopsProps {
   shops: ShopData[];
   currentPage: number;
   totalPages: number;
+  query?: string;
 }
 
 const AllShops: React.FC<AllShopsProps> = ({
   shops,
   currentPage,
   totalPages,
+  query,
 }) => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* ---------- Header ---------- */}
       <div className="mb-8 text-center sm:text-left">
-        <h1 className="text-3xl font-bold text-gray-900">Salons</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          {query ? `Search Results for "${query}"` : "Salons"}
+        </h1>
         <p className="text-gray-500 mt-2 text-lg">
-          Book your preferred time slot instantly
+          {query
+            ? `Showing salons matching your search`
+            : `Book your preferred time slot instantly`}
         </p>
       </div>
 
@@ -31,9 +38,7 @@ const AllShops: React.FC<AllShopsProps> = ({
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-          <p className="text-gray-500 text-lg">No shops found.</p>
-        </div>
+        <ComingSoonArea query={query} />
       )}
 
       {/* ---------- Pagination ---------- */}

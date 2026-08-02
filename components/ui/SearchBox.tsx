@@ -129,34 +129,51 @@ const SearchInput = ({ label }: SearchBoxProps) => {
       </form>
 
       {/* Suggestions Dropdown */}
-      {showSuggestions && suggestions.length > 0 && (
+      {showSuggestions && searchTerm.trim().length >= 2 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden z-50">
-          {suggestions.map((suggestion) => (
-            <Link
-              key={suggestion._id}
-              href={`/shops/${suggestion._id}`}
-              className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
-              onClick={() => setShowSuggestions(false)}
+          {suggestions.length > 0 ? (
+            suggestions.map((suggestion) => (
+              <Link
+                key={suggestion._id}
+                href={`/shops/${suggestion._id}`}
+                className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
+                onClick={() => setShowSuggestions(false)}
+              >
+                <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0">
+                  <Image
+                    src={suggestion.image}
+                    alt={suggestion.name}
+                    fill
+                    sizes="40px"
+                    className="object-cover"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-medium text-gray-900 truncate">
+                    {suggestion.name}
+                  </h4>
+                  <p className="text-xs text-gray-500 truncate">
+                    {suggestion.address.line1}
+                  </p>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div
+              className="p-3 sm:p-4 hover:bg-blue-50/50 transition-colors cursor-pointer text-left"
+              onClick={handleSubmit}
             >
-              <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0">
-                <Image
-                  src={suggestion.image}
-                  alt={suggestion.name}
-                  fill
-                  sizes="40px"
-                  className="object-cover"
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-medium text-gray-900 truncate">
-                  {suggestion.name}
-                </h4>
-                <p className="text-xs text-gray-500 truncate">
-                  {suggestion.address.line1}
+              <div className="flex items-center gap-2">
+            
+                <p className="text-xs sm:text-sm font-semibold text-gray-900">
+                  We are coming soon in this <span className="text-blue-600">Area</span>.
                 </p>
               </div>
-            </Link>
-          ))}
+              <p className="text-[11px] text-gray-500 mt-0.5 pl-5">
+                Click or press Enter to search for "{searchTerm}"
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

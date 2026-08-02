@@ -97,8 +97,8 @@ const AllShops = ({ shops }: AllShopsProps) => {
             />
           ))
         ) : (
-          <div className="col-span-full p-8 text-center text-gray-400 text-sm font-medium bg-white rounded-2xl border border-gray-100">
-            We will coming soon in your <span className="text-blue-600">Area</span>
+          <div className="col-span-full p-8 text-center text-gray-500 text-sm font-semibold bg-gradient-to-r from-blue-50/50 via-white to-indigo-50/50 rounded-2xl border border-blue-100 shadow-xs">
+            📍 We are coming soon in this <span className="text-blue-600 font-bold">Area</span>.
           </div>
         )}
       </div>

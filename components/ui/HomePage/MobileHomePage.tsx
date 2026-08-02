@@ -8,6 +8,7 @@ import slider_img from "@/assets/hero.png";
 import book_arrow from "@/assets/arrow_icon.svg";
 import { ShopData } from "../ShopCard";
 import StatsBanner from "./StatsBanner";
+import ComingSoonArea from "../ComingSoonArea";
 
 interface MobileHomePageProps {
   shops: ShopData[];
@@ -384,8 +385,8 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({ shops }) => {
               </Link>
             ))
           ) : (
-            <div className="text-center p-6 text-xs text-gray-400 font-medium bg-white rounded-2xl border border-gray-100">
-              No salons found
+            <div className="col-span-full">
+              <ComingSoonArea />
             </div>
           )}
         </div>
