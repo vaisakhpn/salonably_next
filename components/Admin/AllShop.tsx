@@ -98,7 +98,7 @@ const AllShops = ({ shops }: AllShopsProps) => {
           ))
         ) : (
           <div className="col-span-full p-8 text-center text-gray-400 text-sm font-medium bg-white rounded-2xl border border-gray-100">
-            No shops found
+            We will coming soon in your <span className="text-blue-600">Area</span>
           </div>
         )}
       </div>
