@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import lockmytime from "@/assets/LockMyTime.png";
+import { toast } from "@/lib/toast";
 
 const Login = () => {
   const [state, setState] = useState<"Sign Up" | "Login">("Sign Up");
@@ -43,10 +44,18 @@ const Login = () => {
       }
 
       // Successful login/signup
+      toast.success(
+        data.message ||
+          (state === "Sign Up"
+            ? "Account created successfully!"
+            : "Logged in successfully!")
+      );
       router.push("/"); // Redirect to home
       router.refresh(); // Refresh to update UI state if needed
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      const errMsg = err instanceof Error ? err.message : "An error occurred";
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }

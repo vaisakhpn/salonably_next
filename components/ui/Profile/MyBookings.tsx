@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "@/lib/toast";
 
 interface Booking {
   _id: string;
@@ -13,20 +14,20 @@ interface Booking {
     name: string;
     address: {
       line1: string;
-      line2: string;
+      line2?: string;
     };
     image: string;
   };
   slotDate: string;
   slotTime: string;
   amount: number;
-  status: string;
-  createdAt?: string;
+  status?: string;
+  isCompleted?: boolean;
 }
 
-const MyBookings = ({ initialBookings }: { initialBookings: Booking[] }) => {
+const MyBookings = ({ initialBookings = [] }: { initialBookings: Booking[] }) => {
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
-  const [activeFilter, setActiveFilter] = useState<"all" | "booked" | "completed" | "cancelled">("all");
+  const [activeFilter, setActiveFilter] = useState<"all" | "confirmed" | "cancelled">("all");
   const [cancellingId, setCancellingId] = useState<string | null>(null);
   const router = useRouter();
 
@@ -44,13 +45,14 @@ const MyBookings = ({ initialBookings }: { initialBookings: Booking[] }) => {
       const data = await res.json();
 
       if (res.ok) {
+        toast.success(data.message || "Booking cancelled successfully");
         setBookings(bookings.map((b) => (b._id === bookingId ? { ...b, status: "cancelled" } : b)));
         router.refresh();
       } else {
-        alert(data.message || "Failed to cancel booking");
+        toast.error(data.message || "Failed to cancel booking");
       }
     } catch (error) {
-      alert("Failed to cancel booking");
+      toast.error("Failed to cancel booking");
     } finally {
       setCancellingId(null);
     }

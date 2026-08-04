@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import lockmytime from "@/assets/LockMyTime.png";
+import { toast } from "@/lib/toast";
 
 const LoginUser = () => {
   const [state, setState] = useState<"Login" | "Register">("Login");
@@ -51,10 +52,13 @@ const LoginUser = () => {
       }
 
       // Successful Login
+      toast.success(data.message || "Logged in successfully!");
       router.push("/shop-owner");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      const errMsg = err instanceof Error ? err.message : "Something went wrong";
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }
@@ -91,10 +95,13 @@ const LoginUser = () => {
       }
 
       // Successful Registration
+      toast.success(data.message || "Shop registered successfully!");
       router.push("/shop-owner");
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Registration error occurred");
+      const errMsg = err instanceof Error ? err.message : "Registration error occurred";
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setLoading(false);
     }

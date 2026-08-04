@@ -83,7 +83,19 @@ export default function RootLayout({
         suppressHydrationWarning={true}
       >
         <div>
-          <ToastContainer />
+          <ToastContainer
+            position="top-right"
+            autoClose={4000}
+            hideProgressBar={true}
+            newestOnTop={true}
+            closeOnClick={false}
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            icon={false}
+            closeButton={false}
+          />
           {children}
         </div>
       </body>

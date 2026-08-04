@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -27,14 +27,14 @@ const LoginUser = () => {
       const data = await response.json();
 
       if (response.ok) {
-        toast.success(data.message);
+        toast.success(data.message || "Admin logged in successfully!");
         // Cookies are set by the server.
        
           // Refresh the page to allow the server component to re-verify the cookie and render the dashboard
           router.refresh();
      
       } else {
-        toast.error(data.message);
+        toast.error(data.message || "Login failed");
       }
     } catch (error) {
       console.error(error);

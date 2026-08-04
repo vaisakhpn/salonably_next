@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import { currency, numberInputOnWheelPreventChange } from "@/lib/utils";
 import TimeSlotSelector from "../Admin/TimeSlotSelector";

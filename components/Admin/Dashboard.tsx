@@ -2,7 +2,7 @@
 
 import React from "react";
 import { assets } from "@/assets/assets";
-import { toast } from "react-toastify";
+import { toast } from "@/lib/toast";
 import { slotDateFormat, isBookingCompleted } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";

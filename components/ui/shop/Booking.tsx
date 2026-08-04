@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { numberInputOnWheelPreventChange } from "@/lib/utils";
+import { toast } from "@/lib/toast";
 
 import slider_img from "@/assets/hero.png"; // Fallback image
 
@@ -13,33 +14,53 @@ interface BookingProps {
   isUserLoggedIn: boolean;
 }
 
+interface Slot {
+  date: string;
+  day: string;
+  fullDate: Date;
+  times: string[];
+}
+
 const Booking: React.FC<BookingProps> = ({ shopData, initialOccupiedSlots, isUserLoggedIn }) => {
   const shopInfo = shopData;
 
   if (!shopInfo) {
     return <div className="text-center py-10">Shop not found</div>;
   }
+
+  const [shopSlots, setShopSlots] = useState<Slot[]>([]);
   const [slotIndex, setSlotIndex] = useState(0);
   const [slotTime, setSlotTime] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState<{ date: string; time: string } | null>(null);
+
+  // Guest booking states
   const [guestName, setGuestName] = useState("");
   const [guestPhone, setGuestPhone] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(isUserLoggedIn);
-  const [occupiedSlots, setOccupiedSlots] = useState<
-    { date: string; time: string }[]
-  >(initialOccupiedSlots);
-  const [bookingDetails, setBookingDetails] = useState<null | {
-    date: string;
-    time: string;
-  }>(null);
-  const [loading, setLoading] = useState(false);
+
+  // Controlled occupied slots array
+  const [occupiedSlots, setOccupiedSlots] = useState<{ date: string; time: string }[]>(initialOccupiedSlots || []);
+
   const router = useRouter();
 
-  const isSlotOccupied = (date: string, time: string) => {
-    return occupiedSlots.some(
-      (slot) => slot.date === date && slot.time === time,
-    );
+  // Helper: convert time string "10:30 AM" or "10:30" to minutes from midnight
+  const convertTimeToMinutes = (timeStr: string): number => {
+    if (!timeStr) return 0;
+    const isPM = timeStr.toUpperCase().includes("PM");
+    const isAM = timeStr.toUpperCase().includes("AM");
+    const cleanTime = timeStr.replace(/(AM|PM|\s)/gi, "").trim();
+    const parts = cleanTime.split(":");
+    let hours = parseInt(parts[0], 10) || 0;
+    const minutes = parseInt(parts[1], 10) || 0;
+
+    if (isPM && hours < 12) hours += 12;
+    if (isAM && hours === 12) hours = 0;
+
+    return hours * 60 + minutes;
   };
 
+  // Check if a time slot has already passed for TODAY
   const isSlotPast = (date: string, time: string) => {
     const today = new Date();
     const todayDateString =
@@ -58,84 +79,11 @@ const Booking: React.FC<BookingProps> = ({ shopData, initialOccupiedSlots, isUse
     return currentMinutes + 15 >= slotMinutes;
   };
 
-  const handleBooking = async () => {
-    if (!slotTime) {
-      alert("Please select a time slot");
-      return;
-    }
-
-    if (isSlotOccupied(shopSlots[slotIndex].date, slotTime)) {
-      alert("This slot is already booked. Please choose another one.");
-      return;
-    }
-
-    if (isSlotPast(shopSlots[slotIndex].date, slotTime)) {
-      alert("This slot is no longer available.");
-      return;
-    }
-
-    if (!isLoggedIn && (!guestName || !guestPhone)) {
-      alert("Please enter both Name and Phone Number");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch("/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          shopId: shopInfo._id,
-          slotDate: shopSlots[slotIndex].date,
-          slotTime,
-          shopData: shopInfo,
-          amount: shopInfo.fees,
-          guestDetails: !isLoggedIn
-            ? { name: guestName, phone: guestPhone }
-            : undefined,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        if (res.status === 401 && isLoggedIn) {
-          setIsLoggedIn(false);
-          alert("Session expired. Please enter guest details or login.");
-          setLoading(false);
-          return;
-        }
-        throw new Error(data.message || "Booking failed");
-      }
-
-      // Optimistically update occupied slots
-      setOccupiedSlots((prev) => [
-        ...prev,
-        { date: shopSlots[slotIndex].date, time: slotTime },
-      ]);
-
-      setBookingDetails({
-        date: shopSlots[slotIndex].date,
-        time: slotTime,
-      });
-
-      if (!isLoggedIn) {
-        // No account creation message needed
-      }
-    } catch (error) {
-      alert(error instanceof Error ? error.message : "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
+  const isSlotOccupied = (date: string, time: string) => {
+    return occupiedSlots.some(
+      (slot) => slot.date === date && slot.time === time,
+    );
   };
-
-  interface Slot {
-    date: string;
-    day: string;
-    fullDate: Date;
-    times: string[];
-  }
-
-  const [shopSlots, setShopSlots] = useState<Slot[]>([]);
 
   useEffect(() => {
     const generateDates = () => {
@@ -156,14 +104,6 @@ const Booking: React.FC<BookingProps> = ({ shopData, initialOccupiedSlots, isUse
         });
       }
       return dates;
-    };
-
-    const convertTimeToMinutes = (timeStr: string) => {
-      const [time, period] = timeStr.split(" ");
-      let [hours, minutes] = time.split(":").map(Number);
-      if (period === "PM" && hours !== 12) hours += 12;
-      if (period === "AM" && hours === 12) hours = 0;
-      return hours * 60 + minutes;
     };
 
     const generatedSlots = generateDates().map((d) => {
@@ -196,12 +136,73 @@ const Booking: React.FC<BookingProps> = ({ shopData, initialOccupiedSlots, isUse
     setShopSlots(generatedSlots);
   }, [shopInfo]);
 
-  const convertTimeToMinutes = (timeStr: string) => {
-    const [time, period] = timeStr.split(" ");
-    let [hours, minutes] = time.split(":").map(Number);
-    if (period === "PM" && hours !== 12) hours += 12;
-    if (period === "AM" && hours === 12) hours = 0;
-    return hours * 60 + minutes;
+  const handleBooking = async () => {
+    if (!slotTime) {
+      toast.warning("Please select a time slot");
+      return;
+    }
+
+    if (isSlotOccupied(shopSlots[slotIndex].date, slotTime)) {
+      toast.warning("This slot is already booked. Please choose another one.");
+      return;
+    }
+
+    if (isSlotPast(shopSlots[slotIndex].date, slotTime)) {
+      toast.warning("This slot is no longer available.");
+      return;
+    }
+
+    if (!isLoggedIn && (!guestName || !guestPhone)) {
+      toast.warning("Please enter both Name and Phone Number");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          shopId: shopInfo._id,
+          slotDate: shopSlots[slotIndex].date,
+          slotTime,
+          shopData: shopInfo,
+          amount: shopInfo.fees,
+          guestDetails: !isLoggedIn
+            ? { name: guestName, phone: guestPhone }
+            : undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 401 && isLoggedIn) {
+          setIsLoggedIn(false);
+          toast.error("Session expired. Please enter guest details or login.");
+          setLoading(false);
+          return;
+        }
+        throw new Error(data.message || "Booking failed");
+      }
+
+      toast.success("Appointment booked successfully!");
+
+      // Optimistically update occupied slots
+      setOccupiedSlots((prev) => [
+        ...prev,
+        { date: shopSlots[slotIndex].date, time: slotTime },
+      ]);
+
+      setBookingDetails({
+        date: shopSlots[slotIndex].date,
+        time: slotTime,
+      });
+
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

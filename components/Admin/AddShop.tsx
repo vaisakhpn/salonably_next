@@ -3,7 +3,7 @@
 import { assets } from "@/assets/assets";
 import Image from "next/image";
 import React, { useState, ChangeEvent, FormEvent } from "react";
-import { toast } from "react-toastify";
+import { toast } from "@/lib/toast";
 import TimeSlotSelector from "./TimeSlotSelector";
 import { numberInputOnWheelPreventChange } from "@/lib/utils";
 

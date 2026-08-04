@@ -1,7 +1,7 @@
 "use client";
 
 import { assets } from "@/assets/assets";
-import { toast } from "react-toastify";
+import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import { currency, slotDateFormat, isBookingCompleted } from "@/lib/utils";
 import Image from "next/image";
