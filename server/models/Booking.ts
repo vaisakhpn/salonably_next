@@ -25,7 +25,7 @@ const bookingSchema = new mongoose.Schema({
   },
   expiresAt: { type: Date },
   holdToken: { type: String },
-});
+}, { timestamps: true });
 
 // Enforce that a slot can only have ONE active booking or hold at a time.
 bookingSchema.index(

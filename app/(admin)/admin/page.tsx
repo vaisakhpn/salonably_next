@@ -25,7 +25,7 @@ const page = async () => {
   // Fetch latest bookings with populated data
   // Note: Mongoose return generic Objects, need to be serialized for Client Components if they are complex types
   const latestBookings = await BookingModel.find({})
-    .sort({ createdAt: -1 })
+    .sort({ _id: -1 })
     .limit(5)
     .lean();
 

@@ -28,7 +28,7 @@ const page = async () => {
 
   // Fetch bookings for this shop
   const bookings = await BookingModel.find({ shopId })
-    .sort({ createdAt: -1 })
+    .sort({ _id: -1 })
     .lean();
 
   return (

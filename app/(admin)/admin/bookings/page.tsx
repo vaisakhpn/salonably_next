@@ -15,7 +15,7 @@ const page = async () => {
 
   await dbConnect();
 
-  const bookings = await BookingModel.find({}).sort({ createdAt: -1 }).lean();
+  const bookings = await BookingModel.find({}).sort({ _id: -1 }).lean();
 
   return (
     <div>

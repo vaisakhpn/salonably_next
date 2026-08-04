@@ -16,7 +16,7 @@ const page = async () => {
 
   // Fast lean query
   const bookingsData = await BookingModel.find({ userId: user._id })
-    .sort({ createdAt: -1 })
+    .sort({ _id: -1 })
     .lean();
 
   const bookings = JSON.parse(JSON.stringify(bookingsData));

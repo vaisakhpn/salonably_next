@@ -26,7 +26,7 @@ export async function GET() {
   try {
     await dbConnect();
     // Populate simple shop/user if references existed, but schema stores objects.
-    const bookings = await BookingModel.find({}).sort({ createdAt: -1 });
+    const bookings = await BookingModel.find({}).sort({ _id: -1 });
     return NextResponse.json({ bookings }, { status: 200 });
   } catch (error) {
     return NextResponse.json(

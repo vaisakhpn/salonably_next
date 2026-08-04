@@ -53,7 +53,7 @@ const page = async () => {
   });
 
   const latestBookings = await BookingModel.find({ shopId: shopId })
-    .sort({ createdAt: -1 })
+    .sort({ _id: -1 })
     .limit(5)
     .lean();
 

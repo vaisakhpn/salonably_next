@@ -167,7 +167,7 @@ export async function GET() {
 
     // Fetch bookings
     let bookings = await BookingModel.find({ userId: user._id }).sort({
-      createdAt: -1,
+      _id: -1,
     });
 
     const now = new Date();
