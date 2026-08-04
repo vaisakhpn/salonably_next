@@ -1,6 +1,7 @@
 export const currency = "₹";
 
 export const slotDateFormat = (slotDate: string) => {
+  if (!slotDate) return "";
   const months = [
     "Jan",
     "Feb",
@@ -40,15 +41,18 @@ export const parseSlotDateTime = (
 ): Date | null => {
   if (!slotDate) return null;
 
-  let day: number = 1,
-    month: number = 0,
-    year: number = new Date().getFullYear();
+  const now = new Date();
+  let day: number = now.getDate();
+  let month: number = now.getMonth();
+  let year: number = now.getFullYear();
 
   if (slotDate.includes("_")) {
     const parts = slotDate.split("_");
     day = parseInt(parts[0], 10);
     month = parseInt(parts[1], 10) - 1; // Month is 0-indexed in JS Date
-    year = parseInt(parts[2], 10);
+    if (parts[2]) {
+      year = parseInt(parts[2], 10);
+    }
   } else if (slotDate.includes("-")) {
     const parts = slotDate.split("-");
     if (parts[0].length === 4) {
@@ -58,16 +62,47 @@ export const parseSlotDateTime = (
     } else {
       day = parseInt(parts[0], 10);
       month = parseInt(parts[1], 10) - 1;
-      year = parseInt(parts[2], 10);
+      if (parts[2]) {
+        year = parseInt(parts[2], 10);
+      }
     }
   } else {
-    const parsed = new Date(slotDate);
-    if (!isNaN(parsed.getTime())) {
-      day = parsed.getDate();
-      month = parsed.getMonth();
-      year = parsed.getFullYear();
+    // Handle formats like "4 Aug" or "4 Aug 2026"
+    const months = [
+      "jan",
+      "feb",
+      "mar",
+      "apr",
+      "may",
+      "jun",
+      "jul",
+      "aug",
+      "sep",
+      "oct",
+      "nov",
+      "dec",
+    ];
+    const parts = slotDate.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      day = parseInt(parts[0], 10) || 1;
+      const monthIdx = months.findIndex((m) =>
+        parts[1].toLowerCase().startsWith(m),
+      );
+      if (monthIdx !== -1) {
+        month = monthIdx;
+      }
+      if (parts[2]) {
+        year = parseInt(parts[2], 10) || now.getFullYear();
+      }
     } else {
-      return null;
+      const parsed = new Date(slotDate);
+      if (!isNaN(parsed.getTime())) {
+        day = parsed.getDate();
+        month = parsed.getMonth();
+        year = parsed.getFullYear();
+      } else {
+        return null;
+      }
     }
   }
 

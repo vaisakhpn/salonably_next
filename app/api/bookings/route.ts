@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import dbConnect from "../../../server/db/mongodb";
 import BookingModel from "../../../server/models/Booking";
+import ShopModel from "../../../server/models/Shop";
 import UserModel from "../../../server/models/User";
 import { getUser } from "@/server/middleware/auth";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import { parseSlotDateTime } from "@/lib/utils";
 
 export async function POST(req: Request) {
   try {
@@ -76,6 +78,11 @@ export async function POST(req: Request) {
 
       await heldBooking.save();
 
+      // Sync slots_booked on ShopModel
+      await ShopModel.findByIdAndUpdate(shopId, {
+        $addToSet: { [`slots_booked.${slotDate}`]: slotTime },
+      }).catch((e) => console.error("Error updating shop slots_booked:", e));
+
       return NextResponse.json(
         { message: "Booking successful", booking: heldBooking },
         { status: 201 },
@@ -122,6 +129,11 @@ export async function POST(req: Request) {
         status: "booked",
       });
 
+      // Sync slots_booked on ShopModel
+      await ShopModel.findByIdAndUpdate(shopId, {
+        $addToSet: { [`slots_booked.${slotDate}`]: slotTime },
+      }).catch((e) => console.error("Error updating shop slots_booked:", e));
+
       return NextResponse.json(
         { message: "Booking successful", booking: newBooking },
         { status: 201 },
@@ -159,21 +171,18 @@ export async function GET() {
     });
 
     const now = new Date();
-    const currentYear = now.getFullYear();
     const updates = [];
 
     // Check for past bookings and update status
     for (const booking of bookings) {
       if (booking.status === "booked") {
         try {
-          // Construct date string: "20 Jan 2026 10:00 AM"
-          const dateString = `${booking.slotDate} ${currentYear} ${booking.slotTime}`;
-          const bookingDateTime = new Date(dateString);
+          const bookingDateTime = parseSlotDateTime(
+            booking.slotDate,
+            booking.slotTime,
+          );
 
-          // Handle year boundary (e.g., booking in Jan 2026, current date Dec 2025 - unlikely with current logic but good to keep in mind)
-          // For now, assuming current year is fine as slots are generated for next 7 days.
-
-          if (bookingDateTime < now) {
+          if (bookingDateTime && bookingDateTime < now) {
             booking.status = "completed";
             booking.isCompleted = true;
             updates.push(booking.save());

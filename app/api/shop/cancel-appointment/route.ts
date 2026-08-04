@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/server/db/mongodb";
 import BookingModel from "@/server/models/Booking";
+import ShopModel from "@/server/models/Shop";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 
@@ -42,6 +43,11 @@ export async function POST(req: Request) {
     booking.status = "cancelled";
 
     await booking.save();
+
+    // Pull slot from ShopModel.slots_booked
+    await ShopModel.findByIdAndUpdate(booking.shopId, {
+      $pull: { [`slots_booked.${booking.slotDate}`]: booking.slotTime },
+    }).catch((e) => console.error("Error pulling shop slots_booked:", e));
 
     return NextResponse.json(
       { message: "Appointment cancelled" },

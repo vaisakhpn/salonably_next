@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/server/db/mongodb";
 import BookingModel from "@/server/models/Booking";
+import ShopModel from "@/server/models/Shop";
 import { getUser } from "@/server/middleware/auth";
 import crypto from "crypto";
 
@@ -56,6 +57,10 @@ export async function POST(req: Request) {
     );
 
     if (expiredHold) {
+      await ShopModel.findByIdAndUpdate(shopId, {
+        $addToSet: { [`slots_booked.${slotDate}`]: slotTime },
+      }).catch((e) => console.error("Error updating shop slots_booked:", e));
+
       // Successfully took over an expired hold!
       return NextResponse.json(
         { message: "Slot held successfully", holdToken },
@@ -64,8 +69,6 @@ export async function POST(req: Request) {
     }
 
     // If there was no expired hold, we try to create a brand new one.
-    // If multiple users try this at the exact same millisecond, MongoDB's 
-    // unique partial index will accept 1 and throw a Duplicate Key Error (11000) for the rest!
     try {
       await BookingModel.create({
         userId: user?._id || null,
@@ -89,6 +92,10 @@ export async function POST(req: Request) {
         expiresAt,
         holdToken,
       });
+
+      await ShopModel.findByIdAndUpdate(shopId, {
+        $addToSet: { [`slots_booked.${slotDate}`]: slotTime },
+      }).catch((e) => console.error("Error updating shop slots_booked:", e));
 
       return NextResponse.json(
         { message: "Slot held successfully", holdToken },

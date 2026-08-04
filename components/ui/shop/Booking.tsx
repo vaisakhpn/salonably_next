@@ -16,6 +16,7 @@ interface BookingProps {
 
 interface Slot {
   date: string;
+  displayDate: string;
   day: string;
   fullDate: Date;
   times: string[];
@@ -63,10 +64,7 @@ const Booking: React.FC<BookingProps> = ({ shopData, initialOccupiedSlots, isUse
   // Check if a time slot has already passed for TODAY
   const isSlotPast = (date: string, time: string) => {
     const today = new Date();
-    const todayDateString =
-      today.getDate() +
-      " " +
-      today.toLocaleString("default", { month: "short" });
+    const todayDateString = `${today.getDate()}_${today.getMonth() + 1}_${today.getFullYear()}`;
 
     if (date !== todayDateString) {
       return false; // Future dates are available
@@ -89,14 +87,15 @@ const Booking: React.FC<BookingProps> = ({ shopData, initialOccupiedSlots, isUse
     const generateDates = () => {
       const dates = [];
       const today = new Date();
-      for (let i = 0; i < 2; i++) {
+      for (let i = 0; i < 7; i++) {
         const date = new Date(today);
         date.setDate(today.getDate() + i);
+        const dayNum = date.getDate();
+        const monthNum = date.getMonth() + 1;
+        const yearNum = date.getFullYear();
         dates.push({
-          date:
-            date.getDate() +
-            " " +
-            date.toLocaleString("default", { month: "short" }),
+          date: `${dayNum}_${monthNum}_${yearNum}`,
+          displayDate: `${dayNum} ${date.toLocaleString("default", { month: "short" })}`,
           day: date
             .toLocaleString("default", { weekday: "short" })
             .toUpperCase(),
@@ -257,10 +256,10 @@ const Booking: React.FC<BookingProps> = ({ shopData, initialOccupiedSlots, isUse
                   >
                     <p className="text-xs font-semibold uppercase">{slot.day}</p>
                     <p className="text-sm font-extrabold mt-0.5">
-                      {slot.date.split(" ")[0]}
+                      {slot.displayDate.split(" ")[0]}
                     </p>
                     <p className="text-[10px] font-medium opacity-80">
-                      {slot.date.split(" ")[1]}
+                      {slot.displayDate.split(" ")[1]}
                     </p>
                   </div>
                 );
