@@ -38,7 +38,7 @@ const Navbar = () => {
         />
         <div className="flex items-center gap-2">
           <span className="font-bold text-base sm:text-lg text-gray-800 tracking-tight">
-            LockMyTime
+            Lock<span className="text-blue-600">My</span>Time
           </span>
           <p className="border px-2.5 py-0.5 rounded-full border-blue-200 bg-blue-50/80 text-blue-700 text-xs font-semibold">
             Admin Panel

@@ -19,8 +19,8 @@ const Navbar = async () => {
             className="w-9 sm:w-11 h-9 sm:h-11 rounded-full object-cover"
             alt="LockMyTime Logo"
           />
-          <span className="font-bold text-lg sm:text-2xl text-blue-600 tracking-tight">
-            LockMyTime
+          <span className="font-bold text-lg sm:text-2xl text-black tracking-tight">
+            Lock<span className="text-blue-600">My</span>Time
           </span>
         </Link>
 
