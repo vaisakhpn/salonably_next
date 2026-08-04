@@ -41,6 +41,9 @@ shopSchema.index({
   "address.line2": "text"
 });
 
-const ShopModel = mongoose.models.shop || mongoose.model("shop", shopSchema);
+const ShopModel =
+  mongoose.models.shop ||
+  mongoose.models.shops ||
+  mongoose.model("shop", shopSchema, "shops");
 
 export default ShopModel;

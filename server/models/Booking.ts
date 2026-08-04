@@ -37,6 +37,8 @@ bookingSchema.index(
 );
 
 const BookingModel =
-  mongoose.models.booking || mongoose.model("booking", bookingSchema);
+  mongoose.models.booking ||
+  mongoose.models.bookings ||
+  mongoose.model("booking", bookingSchema, "bookings");
 
 export default BookingModel;
