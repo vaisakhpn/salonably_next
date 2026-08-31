@@ -171,9 +171,9 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({ shops }) => {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2.5 pt-1">
+          <div className="flex flex-row items-center gap-2.5 pt-1">
             <Link href="/shops" className="cursor-pointer">
-              <button className="bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/40 active:scale-95 text-white font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-full transition-all flex items-center gap-2 cursor-pointer border border-blue-400/40">
+              <button className="bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/40 active:scale-95 text-white font-semibold text-xs sm:text-sm px-4 py-2 rounded-full transition-all flex items-center gap-2 cursor-pointer border border-blue-400/40">
                 <span>Book Now</span>
                 <Image
                   className="w-3 h-3 filter invert"
@@ -189,7 +189,7 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({ shops }) => {
               rel="noopener noreferrer"
               className="cursor-pointer"
             >
-              <button className="flex items-center gap-1.5 bg-white/95 hover:bg-white text-gray-900 font-medium text-xs sm:text-sm px-4 sm:px-5 py-2.5 rounded-full shadow-md active:scale-95 transition-all cursor-pointer border border-white/40">
+              <button className="flex items-center gap-1.5 bg-white/95 hover:bg-white text-gray-900 font-medium text-xs sm:text-sm px-4 sm:px-5 py-2 rounded-full shadow-md active:scale-95 transition-all cursor-pointer border border-white/40">
                 <svg
                   className="w-3.5 h-3.5 text-blue-600 shrink-0"
                   fill="currentColor"
