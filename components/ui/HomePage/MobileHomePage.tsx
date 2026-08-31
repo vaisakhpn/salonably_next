@@ -170,16 +170,38 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({ shops }) => {
             </div>
           </div>
 
-          {/* Glowing Action Button */}
-          <div className="pt-1">
-            <Link href="/shops" className="inline-block cursor-pointer">
-              <button className="bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/40 active:scale-95 text-white font-extrabold text-xs sm:text-sm px-6 py-2.5 rounded-full transition-all flex items-center gap-2 cursor-pointer border border-blue-400/40">
+          {/* Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2.5 pt-1">
+            <Link href="/shops" className="cursor-pointer">
+              <button className="bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/40 active:scale-95 text-white font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-full transition-all flex items-center gap-2 cursor-pointer border border-blue-400/40">
                 <span>Book Now</span>
                 <Image
                   className="w-3 h-3 filter invert"
                   src={book_arrow}
                   alt="arrow"
                 />
+              </button>
+            </Link>
+
+            <Link
+              href="https://www.instagram.com/reel/DbgLsNtS3iR/?utm_source=ig_web_copy_link&igsi=MzRlODBiNWFlZA=="
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cursor-pointer"
+            >
+              <button className="flex items-center gap-1.5 bg-white/95 hover:bg-white text-gray-900 font-medium text-xs sm:text-sm px-4 sm:px-5 py-2.5 rounded-full shadow-md active:scale-95 transition-all cursor-pointer border border-white/40">
+                <svg
+                  className="w-3.5 h-3.5 text-blue-600 shrink-0"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span>How it works</span>
               </button>
             </Link>
           </div>

@@ -62,7 +62,12 @@ const Header = () => {
               </button>
             </Link>
 
-            <Link href="/about" className="cursor-pointer">
+            <Link
+              href="https://www.instagram.com/reel/DbgLsNtS3iR/?utm_source=ig_web_copy_link&igsi=MzRlODBiNWFlZA=="
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cursor-pointer"
+            >
               <button className="flex items-center gap-2 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-medium text-sm sm:text-base px-6 sm:px-7 py-3.5 rounded-full transition-all cursor-pointer">
                 <svg
                   className="w-4 h-4 text-blue-600"
