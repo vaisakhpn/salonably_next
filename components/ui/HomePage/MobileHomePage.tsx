@@ -155,7 +155,8 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({ shops }) => {
 
           {/* Subtitle */}
           <p className="text-xs text-gray-200 leading-relaxed font-light line-clamp-2">
-            Discover top-rated salons near you and book your appointment in seconds.
+            Discover top-rated salons near you and book your appointment in
+            seconds.
           </p>
 
           {/* User Proof Stack */}
@@ -319,18 +320,17 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({ shops }) => {
 
         <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
           {categories.map((cat) => (
-            <Link
+            <div
               key={cat.name}
-              href={`/shops?query=${cat.query}`}
               className="bg-white p-3.5 rounded-2xl border border-gray-100 shadow-2xs shrink-0 flex flex-col items-center min-w-[105px] text-center active:scale-95 transition-transform"
             >
               <div className="p-2.5 bg-blue-50 rounded-xl mb-2">{cat.icon}</div>
               <p className="font-bold text-gray-900 text-xs">{cat.name}</p>
               <p className="text-[10px] text-gray-400 mt-0.5">
-                Starting{" "}
+                Starting
                 <span className="text-gray-700 font-semibold">{cat.price}</span>
               </p>
-            </Link>
+            </div>
           ))}
         </div>
       </div>
