@@ -1,14 +1,11 @@
 import mongoose from "mongoose";
 import dns from "dns";
 
-// Resolve local router DNS querySrv ECONNREFUSED errors in dev mode by using Google DNS
-if (process.env.NODE_ENV === "development") {
-  try {
-    dns.setDefaultResultOrder("ipv4first");
-    dns.setServers(["8.8.8.8", "8.8.4.4"]);
-  } catch (err) {
-    console.warn("Failed to set DNS configuration:", err);
-  }
+try {
+  dns.setDefaultResultOrder("ipv4first");
+  dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1", "1.0.0.1"]);
+} catch (err) {
+  console.warn("Failed to set DNS configuration:", err);
 }
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -39,6 +36,12 @@ async function dbConnect() {
   }
 
   if (!cached.promise) {
+    try {
+      dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1", "1.0.0.1"]);
+    } catch (e) {
+      // Ignore if cannot reset
+    }
+
     const opts = {
       bufferCommands: false,
       dbName: "salon", // Set your database name here
