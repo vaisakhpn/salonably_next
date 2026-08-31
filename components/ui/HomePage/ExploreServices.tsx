@@ -123,10 +123,9 @@ const ExploreServices = () => {
       {/* Grid / Horizontal Scroll List */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
         {services.map((item) => (
-          <Link
+          <div
             key={item.name}
-            href={``}
-            className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs hover:shadow-md hover:border-blue-200 transition-all flex flex-col items-center text-center group cursor-pointer"
+            className="bg-white p-5 rounded-2xl border border-gray-100 shadow-xs hover:shadow-md hover:border-blue-200 transition-all flex flex-col items-center text-center group cursor-default"
           >
             <div className="p-3.5 bg-blue-50/70 rounded-2xl group-hover:scale-110 transition-transform mb-3">
               {item.icon}
@@ -138,7 +137,7 @@ const ExploreServices = () => {
               Starting{" "}
               <span className="font-semibold text-gray-700">{item.price}</span>
             </p>
-          </Link>
+          </div>
         ))}
       </div>
     </div>
