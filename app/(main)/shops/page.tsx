@@ -13,6 +13,8 @@ interface PageProps {
 
 import { Metadata } from "next";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Browse Salons",
   description:
@@ -33,22 +35,30 @@ const ShopsListContent = async ({
 
   let filter: any = { available: true };
 
-  if (query) {
-    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const regex = new RegExp(escapedQuery, "i");
+  if (query && query.trim()) {
+    const trimmed = query.trim();
+    const escapedQuery = trimmed.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const prefixRegex = new RegExp(`^${escapedQuery}`, "i");
+    const containsRegex = new RegExp(escapedQuery, "i");
+
     filter = {
-      ...filter,
+      available: true,
       $or: [
-        { name: { $regex: regex } },
-        { "address.line1": { $regex: regex } },
-        { "address.line2": { $regex: regex } },
+        { $text: { $search: trimmed } },
+        { name: { $regex: prefixRegex } },
+        { "address.line1": { $regex: containsRegex } },
+        { "address.line2": { $regex: containsRegex } },
       ],
     };
   }
 
   const [totalShops, shops] = await Promise.all([
     ShopModel.countDocuments(filter),
-    ShopModel.find(filter).skip(skip).limit(pageSize).lean(),
+    ShopModel.find(filter)
+      .sort(query ? { score: { $meta: "textScore" }, date: -1 } : { date: -1 })
+      .skip(skip)
+      .limit(pageSize)
+      .lean(),
   ]);
 
   const totalPages = Math.ceil(totalShops / pageSize);

@@ -4,9 +4,21 @@ import BookingModel from "@/server/models/Booking";
 import ShopModel from "@/server/models/Shop";
 import { getUser } from "@/server/middleware/auth";
 import crypto from "crypto";
+import { rateLimit, getClientIp } from "@/lib/rateLimit";
 
 export async function POST(req: Request) {
   try {
+    // Rate limit: max 10 slot holds per minute per IP
+    const clientIp = getClientIp(req);
+    const limiter = rateLimit(`hold_${clientIp}`, 10, 60000);
+
+    if (!limiter.success) {
+      return NextResponse.json(
+        { message: "Too many requests. Please wait a moment before trying again." },
+        { status: 429 },
+      );
+    }
+
     const user = await getUser();
     const body = await req.json();
     const { shopId, slotDate, slotTime, shopData, amount } = body;

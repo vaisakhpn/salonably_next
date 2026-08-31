@@ -42,13 +42,18 @@ async function dbConnect() {
       // Ignore if cannot reset
     }
 
-    const opts = {
+    const opts: mongoose.ConnectOptions = {
       bufferCommands: false,
-      dbName: "salon", // Set your database name here
+      dbName: "salon",
+      maxPoolSize: 5, // Limit connection pool size per serverless container
+      minPoolSize: 1,
+      serverSelectionTimeoutMS: 5000, // Fail fast if DB is unreachable
+      socketTimeoutMS: 45000,
+      autoIndex: process.env.NODE_ENV !== "production", // Avoid building indexes on production traffic
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
-      return mongoose.connection;
+    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongooseInstance) => {
+      return mongooseInstance.connection;
     });
   }
 

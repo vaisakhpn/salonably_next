@@ -8,9 +8,21 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { parseSlotDateTime } from "@/lib/utils";
+import { rateLimit, getClientIp } from "@/lib/rateLimit";
 
 export async function POST(req: Request) {
   try {
+    // Rate limit: max 5 booking creations per minute per IP
+    const clientIp = getClientIp(req);
+    const limiter = rateLimit(`book_${clientIp}`, 5, 60000);
+
+    if (!limiter.success) {
+      return NextResponse.json(
+        { message: "Too many booking requests. Please wait a moment and try again." },
+        { status: 429 },
+      );
+    }
+
     let user = await getUser();
     const body = await req.json();
     const { shopId, slotDate, slotTime, shopData, amount, guestDetails, holdToken } = body;
@@ -165,17 +177,19 @@ export async function GET() {
 
     await dbConnect();
 
-    // Fetch bookings
-    let bookings = await BookingModel.find({ userId: user._id }).sort({
-      _id: -1,
-    });
+    // Fetch bookings cleanly with .lean() for fast, memory-efficient reads
+    const rawBookings = await BookingModel.find({ userId: user._id })
+      .sort({ _id: -1 })
+      .lean();
 
     const now = new Date();
-    const updates = [];
 
-    // Check for past bookings and update status
-    for (const booking of bookings) {
-      if (booking.status === "booked") {
+    // Determine completion status virtually for the read response without blocking DB writes
+    const bookings = rawBookings.map((booking: any) => {
+      let isCompleted = booking.isCompleted || false;
+      let status = booking.status;
+
+      if (status === "booked") {
         try {
           const bookingDateTime = parseSlotDateTime(
             booking.slotDate,
@@ -183,19 +197,20 @@ export async function GET() {
           );
 
           if (bookingDateTime && bookingDateTime < now) {
-            booking.status = "completed";
-            booking.isCompleted = true;
-            updates.push(booking.save());
+            status = "completed";
+            isCompleted = true;
           }
         } catch (e) {
-          console.error("Error parsing date for booking:", booking._id, e);
+          // Keep current status if parsing fails
         }
       }
-    }
 
-    if (updates.length > 0) {
-      await Promise.all(updates);
-    }
+      return {
+        ...booking,
+        status,
+        isCompleted,
+      };
+    });
 
     return NextResponse.json({ bookings }, { status: 200 });
   } catch (error) {

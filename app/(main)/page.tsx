@@ -9,6 +9,9 @@ import DiscoverPage from "@/components/ui/HomePage/DiscoverPage";
 
 import { Metadata } from "next";
 
+// Cache page at Edge CDN and revalidate in background every 60 seconds (ISR)
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.lockmytime.shop"),
 

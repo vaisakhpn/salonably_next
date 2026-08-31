@@ -133,6 +133,35 @@ const Booking: React.FC<BookingProps> = ({ shopData, initialOccupiedSlots, isUse
     setShopSlots(generatedSlots);
   }, [shopInfo]);
 
+  // Real-time live synchronization for occupied slots
+  useEffect(() => {
+    if (!shopInfo?._id) return;
+
+    let isMounted = true;
+    const fetchOccupied = async () => {
+      try {
+        const res = await fetch(`/api/bookings/occupied?shopId=${shopInfo._id}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && Array.isArray(data.occupiedSlots)) {
+            setOccupiedSlots(data.occupiedSlots);
+          }
+        }
+      } catch (err) {
+        // Silently ignore network hiccup during background polling
+      }
+    };
+
+    const interval = setInterval(fetchOccupied, 8000);
+    window.addEventListener("focus", fetchOccupied);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+      window.removeEventListener("focus", fetchOccupied);
+    };
+  }, [shopInfo?._id]);
+
   if (!shopInfo) {
     return <div className="text-center py-10">Shop not found</div>;
   }
