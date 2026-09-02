@@ -25,7 +25,9 @@ const UserSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: false,
+      required: function (this: any) {
+        return this.authProvider === "credentials";
+      },
     },
     googleId: {
       type: String,

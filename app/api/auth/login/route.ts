@@ -32,6 +32,13 @@ export async function POST(req: Request) {
       );
     }
 
+    if (!user.password) {
+      return NextResponse.json(
+        { message: "This account was registered with Google. Please use 'Continue with Google' to sign in." },
+        { status: 400 },
+      );
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
