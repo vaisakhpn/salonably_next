@@ -24,6 +24,12 @@ export async function POST(req: Request) {
     });
 
     if (existingUser) {
+      if (existingUser.authProvider === "google") {
+        return NextResponse.json(
+          { message: "This email is already registered with Google. Please use 'Continue with Google' to sign in." },
+          { status: 400 },
+        );
+      }
       return NextResponse.json(
         { message: "User already exists with this email or phone" },
         { status: 400 },
