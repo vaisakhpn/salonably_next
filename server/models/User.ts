@@ -25,10 +25,23 @@ const UserSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, "Please specify a password for this user."],
+      required: false,
+    },
+    googleId: {
+      type: String,
+      sparse: true,
+    },
+    authProvider: {
+      type: String,
+      enum: ["credentials", "google"],
+      default: "credentials",
     },
   },
   { timestamps: true },
 );
+
+if (process.env.NODE_ENV !== "production" && mongoose.models.User) {
+  delete (mongoose.models as any).User;
+}
 
 export default mongoose.models.User || mongoose.model("User", UserSchema);
