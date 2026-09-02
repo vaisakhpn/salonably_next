@@ -174,6 +174,37 @@ const Booking: React.FC<BookingProps> = ({
     };
   }, [shopInfo?._id]);
 
+  // Auto-fill guest contact details from localStorage (BookMyShow-style persistence)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("guest_booking_info");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.name && typeof parsed.name === "string") {
+          setGuestName(parsed.name);
+        }
+        if (parsed.phone && typeof parsed.phone === "string") {
+          setGuestPhone(parsed.phone);
+        }
+      }
+    } catch (e) {
+      // Silently ignore storage parsing error
+    }
+  }, []);
+
+  const saveGuestInfo = (nameVal: string, phoneVal: string) => {
+    try {
+      if (nameVal || phoneVal) {
+        localStorage.setItem(
+          "guest_booking_info",
+          JSON.stringify({ name: nameVal, phone: phoneVal }),
+        );
+      }
+    } catch (e) {
+      // Silently ignore storage quota/access errors
+    }
+  };
+
   if (!shopInfo) {
     return <div className="text-center py-10">Shop not found</div>;
   }
@@ -228,6 +259,10 @@ const Booking: React.FC<BookingProps> = ({
       }
 
       toast.success("Appointment booked successfully!");
+
+      if (!isLoggedIn) {
+        saveGuestInfo(guestName.trim(), guestPhone.trim());
+      }
 
       // Optimistically update occupied slots
       setOccupiedSlots((prev) => [
@@ -662,9 +697,46 @@ const Booking: React.FC<BookingProps> = ({
             {/* Guest Details */}
             {!isLoggedIn && (
               <div className="mt-8">
-                <h3 className="font-bold text-gray-900 text-base mb-3">
-                  Guest Details
-                </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-bold text-gray-900 text-base flex items-center gap-2">
+                    <span>Guest Details</span>
+                    {guestName && guestPhone && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                        <svg
+                          className="w-3 h-3 text-blue-600"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        Remembered details
+                      </span>
+                    )}
+                  </h3>
+
+                  {(guestName || guestPhone) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGuestName("");
+                        setGuestPhone("");
+                        try {
+                          localStorage.removeItem("guest_booking_info");
+                        } catch (e) {
+                          // Ignore storage error
+                        }
+                      }}
+                      className="text-xs font-medium text-gray-400 hover:text-red-600 transition-colors cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+
                 <div className="space-y-3">
                   <div className="relative flex items-center border border-gray-200 rounded-2xl bg-white px-4 py-3.5 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all">
                     <svg
@@ -682,9 +754,13 @@ const Booking: React.FC<BookingProps> = ({
                     </svg>
                     <input
                       type="text"
+                      name="name"
+                      id="guest_name"
+                      autoComplete="name"
                       placeholder="Full Name"
                       value={guestName}
                       onChange={(e) => setGuestName(e.target.value)}
+                      onBlur={() => saveGuestInfo(guestName.trim(), guestPhone.trim())}
                       className="w-full text-sm sm:text-base text-gray-900 placeholder-gray-400 bg-transparent outline-none"
                     />
                   </div>
@@ -705,9 +781,13 @@ const Booking: React.FC<BookingProps> = ({
                     </svg>
                     <input
                       type="number"
+                      name="tel"
+                      id="guest_phone"
+                      autoComplete="tel"
                       placeholder="Phone Number"
                       value={guestPhone}
                       onChange={(e) => setGuestPhone(e.target.value)}
+                      onBlur={() => saveGuestInfo(guestName.trim(), guestPhone.trim())}
                       onWheel={numberInputOnWheelPreventChange}
                       className="w-full text-sm sm:text-base text-gray-900 placeholder-gray-400 bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     />
