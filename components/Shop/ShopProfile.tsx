@@ -36,11 +36,31 @@ interface ShopProfileProps {
 const useShopProfile = (initialData: ShopData) => {
   const router = useRouter();
   const [isEdit, setIsEdit] = useState(false);
+  const [isTimeSlotEdit, setIsTimeSlotEdit] = useState(false);
+  const [initialSlots, setInitialSlots] = useState<string[]>(
+    initialData?.availableSlots || [],
+  );
   const [profileData, setProfileData] = useState<ShopData>(initialData);
   const [loading, setLoading] = useState(false);
-  const [imgSrc, setImgSrc] = useState(initialData.image);
+  const [timeSlotLoading, setTimeSlotLoading] = useState(false);
+  const [imgSrc, setImgSrc] = useState(initialData?.image);
 
-  const toggleEdit = () => setIsEdit((prev) => !prev);
+  const toggleEdit = () => {
+    if (!isEdit) {
+      setInitialSlots(profileData.availableSlots || []);
+    }
+    setIsEdit((prev) => !prev);
+  };
+
+  const startTimeSlotEdit = () => {
+    setInitialSlots(profileData.availableSlots || []);
+    setIsTimeSlotEdit(true);
+  };
+
+  const cancelTimeSlotEdit = () => {
+    setProfileData((prev) => ({ ...prev, availableSlots: initialSlots }));
+    setIsTimeSlotEdit(false);
+  };
 
   const handleInputChange = (
     field: keyof ShopData,
@@ -78,7 +98,9 @@ const useShopProfile = (initialData: ShopData) => {
 
       if (response.ok) {
         toast.success(data.message);
+        setInitialSlots(profileData.availableSlots || []);
         setIsEdit(false);
+        setIsTimeSlotEdit(false);
         router.refresh();
       } else {
         toast.error(data.message);
@@ -87,6 +109,41 @@ const useShopProfile = (initialData: ShopData) => {
       toast.error(error.message || "Something went wrong");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateTimeSlots = async () => {
+    setTimeSlotLoading(true);
+    try {
+      const updateData = {
+        name: profileData.name,
+        phone: profileData.phone,
+        fees: profileData.fees,
+        address: profileData.address,
+        available: profileData.available,
+        availableSlots: profileData.availableSlots,
+      };
+
+      const response = await fetch("/api/shop/update-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updateData),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success(data.message || "Time slots updated successfully");
+        setInitialSlots(profileData.availableSlots || []);
+        setIsTimeSlotEdit(false);
+        router.refresh();
+      } else {
+        toast.error(data.message || "Failed to update time slots");
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Something went wrong");
+    } finally {
+      setTimeSlotLoading(false);
     }
   };
 
@@ -123,6 +180,11 @@ const useShopProfile = (initialData: ShopData) => {
 
   return {
     isEdit,
+    isTimeSlotEdit,
+    timeSlotLoading,
+    startTimeSlotEdit,
+    cancelTimeSlotEdit,
+    updateTimeSlots,
     profileData,
     loading,
     toggleEdit,
@@ -140,6 +202,11 @@ const useShopProfile = (initialData: ShopData) => {
 const ShopProfile = ({ shopData }: ShopProfileProps) => {
   const {
     isEdit,
+    isTimeSlotEdit,
+    timeSlotLoading,
+    startTimeSlotEdit,
+    cancelTimeSlotEdit,
+    updateTimeSlots,
     profileData,
     loading,
     toggleEdit,
@@ -152,6 +219,8 @@ const ShopProfile = ({ shopData }: ShopProfileProps) => {
   } = useShopProfile(shopData);
 
   if (!profileData) return null;
+
+  const isEditingSlots = isEdit || isTimeSlotEdit;
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -251,11 +320,103 @@ const ShopProfile = ({ shopData }: ShopProfileProps) => {
 
               {/* Time Slots */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Available Time Slots
-                </label>
-                {isEdit ? (
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Available Time Slots
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {isTimeSlotEdit && !isEdit && (
+                      <button
+                        type="button"
+                        onClick={cancelTimeSlotEdit}
+                        disabled={timeSlotLoading}
+                        className="px-2.5 py-1 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isEditingSlots) {
+                          updateTimeSlots();
+                        } else {
+                          startTimeSlotEdit();
+                        }
+                      }}
+                      disabled={timeSlotLoading || loading}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-md transition-all duration-200 cursor-pointer ${
+                        isEditingSlots
+                          ? "bg-blue-600 text-white hover:bg-blue-700 shadow-xs"
+                          : "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
+                      } disabled:opacity-60 disabled:cursor-not-allowed`}
+                    >
+                      {timeSlotLoading ? (
+                        <>
+                          <svg
+                            className="animate-spin -ml-0.5 h-3 w-3 text-current"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v8H4z"
+                            ></path>
+                          </svg>
+                          <span>Saving...</span>
+                        </>
+                      ) : isEditingSlots ? (
+                        <>
+                          <svg
+                            className="w-3.5 h-3.5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          <span>Save Slots</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            className="w-3.5 h-3.5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                            />
+                          </svg>
+                          <span>Edit Slots</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {isEditingSlots ? (
                   <TimeSlotSelector
+                    hideLabel
                     selectedSlots={profileData.availableSlots || []}
                     onChange={(slots) =>
                       handleInputChange("availableSlots", slots)

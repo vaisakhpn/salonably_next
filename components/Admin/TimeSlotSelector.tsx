@@ -3,11 +3,13 @@ import React from "react";
 interface TimeSlotSelectorProps {
   selectedSlots: string[];
   onChange: (slots: string[]) => void;
+  hideLabel?: boolean;
 }
 
 const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
   selectedSlots,
   onChange,
+  hideLabel = false,
 }) => {
   // Generate time slots from 9:00 AM to 9:00 PM with 30 min intervals
   const generateTimeSlots = () => {
@@ -42,9 +44,11 @@ const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
 
   return (
     <div className="w-full">
-      <label className="block text-sm font-medium text-gray-700 mb-3">
-        Available Time Slots
-      </label>
+      {!hideLabel && (
+        <label className="block text-sm font-medium text-gray-700 mb-3">
+          Available Time Slots
+        </label>
+      )}
       <div className="flex flex-wrap gap-3">
         {allSlots.map((slot) => (
           <button
