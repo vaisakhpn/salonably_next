@@ -18,14 +18,14 @@ export async function POST(req: Request) {
     const decoded = jwt.verify(token.value, JWT_SECRET) as any;
     const shopId = decoded.shopId;
 
-    const { name, phone, fees, address, available, availableSlots } =
+    const { name, phone, fees, address, available, availableSlots, closedDays } =
       await req.json();
 
     await dbConnect();
 
     const updatedShop = await ShopModel.findByIdAndUpdate(
       shopId,
-      { name, phone, fees, address, available, availableSlots },
+      { name, phone, fees, address, available, availableSlots, closedDays },
       { new: true },
     );
 

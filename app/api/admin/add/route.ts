@@ -41,6 +41,7 @@ export async function POST(req: Request) {
     const phone = formData.get("phone") as string;
     const imageFile = formData.get("image") as File;
     const availableSlots = formData.get("availableSlots") as string; // JSON string
+    const closedDays = formData.get("closedDays") as string; // JSON string
 
     if (!name || !email || !password || !imageFile || !ownerName) {
       // Basic validation
@@ -98,6 +99,7 @@ export async function POST(req: Request) {
       phone,
       date: Date.now(),
       availableSlots: availableSlots ? JSON.parse(availableSlots) : [],
+      closedDays: closedDays ? JSON.parse(closedDays) : [],
     });
 
     return NextResponse.json(
@@ -114,6 +116,7 @@ export async function POST(req: Request) {
           address: newShop.address,
           phone: newShop.phone,
           availableSlots: newShop.availableSlots,
+          closedDays: newShop.closedDays,
         },
       },
       { status: 201 },

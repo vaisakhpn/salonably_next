@@ -5,6 +5,7 @@ import ShopModel from "@/server/models/Shop";
 import { getUser } from "@/server/middleware/auth";
 import crypto from "crypto";
 import { rateLimit, getClientIp } from "@/lib/rateLimit";
+import { parseSlotDateTime } from "@/lib/utils";
 
 export async function POST(req: Request) {
   try {
@@ -31,6 +32,67 @@ export async function POST(req: Request) {
     }
 
     await dbConnect();
+
+    const shop = await ShopModel.findById(shopId)
+      .select("closedDays name available")
+      .lean();
+
+    if (!shop) {
+      return NextResponse.json({ message: "Shop not found" }, { status: 404 });
+    }
+
+    if (shop.available === false) {
+      return NextResponse.json(
+        { message: "Shop is currently unavailable for bookings" },
+        { status: 400 },
+      );
+    }
+
+    const bookingDate = parseSlotDateTime(slotDate);
+    if (bookingDate) {
+      const dayName = bookingDate.toLocaleDateString("en-US", {
+        weekday: "long",
+      });
+      const isClosed =
+        Array.isArray(shop.closedDays) &&
+        shop.closedDays.some(
+          (d: string) => d.trim().toLowerCase() === dayName.toLowerCase(),
+        );
+
+      if (isClosed) {
+        return NextResponse.json(
+          { message: `The salon is closed on ${dayName}s` },
+          { status: 400 },
+        );
+      }
+
+      // Check advance booking window (only Today and Tomorrow allowed)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const maxAllowedDate = new Date(today);
+      maxAllowedDate.setDate(today.getDate() + 1); // Tomorrow
+      maxAllowedDate.setHours(23, 59, 59, 999);
+
+      const bookingDay = new Date(bookingDate);
+      bookingDay.setHours(0, 0, 0, 0);
+
+      if (bookingDay < today) {
+        return NextResponse.json(
+          { message: "Cannot book slots in the past" },
+          { status: 400 },
+        );
+      }
+
+      if (bookingDay > maxAllowedDate) {
+        return NextResponse.json(
+          {
+            message:
+              "Advance bookings are only allowed for Today and Tomorrow",
+          },
+          { status: 400 },
+        );
+      }
+    }
 
     const holdToken = crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes hold

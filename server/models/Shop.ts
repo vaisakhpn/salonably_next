@@ -30,6 +30,7 @@ const shopSchema = new mongoose.Schema(
     date: { type: Number, required: true },
     slots_booked: { type: Object, default: {} },
     availableSlots: { type: [String], default: [] },
+    closedDays: { type: [String], default: [] },
   },
   { minimize: false },
 );

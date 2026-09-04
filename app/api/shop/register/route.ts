@@ -108,6 +108,7 @@ export async function POST(req: Request) {
       date: Date.now(),
       slots_booked: {},
       availableSlots: ["11:00 AM", "03:00 PM", "06:30 PM"],
+      closedDays: [],
     });
 
     // Generate JWT Auth Token

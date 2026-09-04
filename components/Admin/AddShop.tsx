@@ -5,12 +5,14 @@ import Image from "next/image";
 import React, { useState, ChangeEvent, FormEvent } from "react";
 import { toast } from "@/lib/toast";
 import TimeSlotSelector from "./TimeSlotSelector";
+import ClosedDaysSelector from "../Shop/ClosedDaysSelector";
 import { numberInputOnWheelPreventChange } from "@/lib/utils";
 
 const AddShop: React.FC = () => {
   const [shopImg, setShopImg] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [closedDays, setClosedDays] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     ownerName: "",
@@ -61,6 +63,7 @@ const AddShop: React.FC = () => {
         JSON.stringify({ line1: formData.address1, line2: formData.address2 }),
       );
       data.append("availableSlots", JSON.stringify(availableSlots));
+      data.append("closedDays", JSON.stringify(closedDays));
 
       const response = await fetch("/api/admin/add", {
         method: "POST",
@@ -84,6 +87,7 @@ const AddShop: React.FC = () => {
           address2: "",
         });
         setAvailableSlots([]);
+        setClosedDays([]);
       } else {
         toast.error(result.message);
       }
@@ -272,6 +276,13 @@ const AddShop: React.FC = () => {
           <TimeSlotSelector
             selectedSlots={availableSlots}
             onChange={setAvailableSlots}
+          />
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-gray-100">
+          <ClosedDaysSelector
+            selectedClosedDays={closedDays}
+            onChange={setClosedDays}
           />
         </div>
 

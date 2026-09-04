@@ -5,6 +5,7 @@ import { toast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import { currency, numberInputOnWheelPreventChange } from "@/lib/utils";
 import TimeSlotSelector from "../Admin/TimeSlotSelector";
+import ClosedDaysSelector from "./ClosedDaysSelector";
 import Image from "next/image";
 
 // --- Types ---
@@ -25,6 +26,7 @@ interface ShopData {
   address: Address;
   available: boolean;
   availableSlots: string[];
+  closedDays?: string[];
 }
 
 interface ShopProfileProps {
@@ -86,6 +88,7 @@ const useShopProfile = (initialData: ShopData) => {
         address: profileData.address,
         available: profileData.available,
         availableSlots: profileData.availableSlots,
+        closedDays: profileData.closedDays || [],
       };
 
       const response = await fetch("/api/shop/update-profile", {
@@ -122,6 +125,7 @@ const useShopProfile = (initialData: ShopData) => {
         address: profileData.address,
         available: profileData.available,
         availableSlots: profileData.availableSlots,
+        closedDays: profileData.closedDays || [],
       };
 
       const response = await fetch("/api/shop/update-profile", {
@@ -441,6 +445,15 @@ const ShopProfile = ({ shopData }: ShopProfileProps) => {
                     )}
                   </div>
                 )}
+              </div>
+
+              {/* Weekly Off / Closed Days */}
+              <div className="pt-2 border-t border-gray-100">
+                <ClosedDaysSelector
+                  selectedClosedDays={profileData.closedDays || []}
+                  onChange={(days) => handleInputChange("closedDays", days)}
+                  isReadOnly={!isEdit}
+                />
               </div>
             </div>
 
