@@ -18,8 +18,12 @@ interface Slot {
   date: string;
   displayDate: string;
   day: string;
+  dayFullName: string;
   fullDate: Date;
   times: string[];
+  isClosed: boolean;
+  isFutureDisabled: boolean;
+  isSelectable: boolean;
 }
 
 const Booking: React.FC<BookingProps> = ({
@@ -92,6 +96,16 @@ const Booking: React.FC<BookingProps> = ({
   useEffect(() => {
     if (!shopInfo) return;
 
+    const closedDays: string[] = Array.isArray(shopInfo.closedDays)
+      ? shopInfo.closedDays
+      : [];
+
+    const isDayNameClosed = (name: string) => {
+      return closedDays.some(
+        (cd) => cd.trim().toLowerCase() === name.toLowerCase(),
+      );
+    };
+
     const generateDates = () => {
       const dates = [];
       const today = new Date();
@@ -101,13 +115,24 @@ const Booking: React.FC<BookingProps> = ({
         const dayNum = date.getDate();
         const monthNum = date.getMonth() + 1;
         const yearNum = date.getFullYear();
+        const dayFullName = date.toLocaleDateString("en-US", {
+          weekday: "long",
+        });
+        const isClosed = isDayNameClosed(dayFullName);
+        const isFutureDisabled = i > 1; // Only today (0) and tomorrow (1) are enabled
+        const isSelectable = !isClosed && !isFutureDisabled;
+
         dates.push({
           date: `${dayNum}_${monthNum}_${yearNum}`,
           displayDate: `${dayNum} ${date.toLocaleString("default", { month: "short" })}`,
           day: date
             .toLocaleString("default", { weekday: "short" })
             .toUpperCase(),
+          dayFullName,
           fullDate: date,
+          isClosed,
+          isFutureDisabled,
+          isSelectable,
         });
       }
       return dates;
@@ -141,6 +166,16 @@ const Booking: React.FC<BookingProps> = ({
     });
 
     setShopSlots(generatedSlots);
+
+    // Auto-select first selectable day (Today if open, otherwise Tomorrow if open)
+    const firstSelectableIndex = generatedSlots.findIndex(
+      (s) => s.isSelectable,
+    );
+    if (firstSelectableIndex !== -1) {
+      setSlotIndex(firstSelectableIndex);
+    } else {
+      setSlotIndex(0);
+    }
   }, [shopInfo]);
 
   // Real-time live synchronization for occupied slots
@@ -210,17 +245,29 @@ const Booking: React.FC<BookingProps> = ({
   }
 
   const handleBooking = async () => {
+    const currentSlot = shopSlots[slotIndex];
+
+    if (!currentSlot || currentSlot.isClosed) {
+      toast.warning("The shop is closed on the selected day.");
+      return;
+    }
+
+    if (currentSlot.isFutureDisabled) {
+      toast.warning("Bookings are only available for Today and Tomorrow.");
+      return;
+    }
+
     if (!slotTime) {
       toast.warning("Please select a time slot");
       return;
     }
 
-    if (isSlotOccupied(shopSlots[slotIndex].date, slotTime)) {
+    if (isSlotOccupied(currentSlot.date, slotTime)) {
       toast.warning("This slot is already booked. Please choose another one.");
       return;
     }
 
-    if (isSlotPast(shopSlots[slotIndex].date, slotTime)) {
+    if (isSlotPast(currentSlot.date, slotTime)) {
       toast.warning("This slot is no longer available.");
       return;
     }
@@ -553,6 +600,62 @@ const Booking: React.FC<BookingProps> = ({
             <div className="flex gap-2.5 sm:gap-3.5 overflow-x-auto pb-2 pt-1 no-scrollbar mt-6">
               {shopSlots.map((slot, index) => {
                 const isSelected = slotIndex === index;
+                const isToday = index === 0;
+                const isTomorrow = index === 1;
+
+                if (slot.isClosed) {
+                  return (
+                    <div
+                      key={index}
+                      onClick={() => {
+                        toast.info(
+                          `${shopInfo.name} is closed on ${slot.dayFullName}s.`,
+                        );
+                      }}
+                      className="relative min-w-[74px] sm:min-w-[82px] py-3.5 px-3 rounded-2xl text-center flex flex-col items-center justify-center transition-all duration-200 bg-gray-50/80 border border-red-100 text-gray-400 opacity-60 cursor-not-allowed select-none"
+                      title={`Closed on ${slot.dayFullName}`}
+                    >
+                      <span className="text-[9px] font-bold tracking-wider uppercase text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full mb-0.5 border border-red-100">
+                        Closed
+                      </span>
+                      <span className="text-[11px] font-bold tracking-wider uppercase text-gray-400">
+                        {slot.day}
+                      </span>
+                      <span className="text-xl sm:text-2xl font-black my-0.5 leading-none text-gray-400">
+                        {slot.displayDate.split(" ")[0]}
+                      </span>
+                      <span className="text-[11px] font-medium text-gray-400">
+                        {slot.displayDate.split(" ")[1]}
+                      </span>
+                    </div>
+                  );
+                }
+
+                if (slot.isFutureDisabled) {
+                  return (
+                    <div
+                      key={index}
+                      onClick={() => {
+                        toast.info(
+                          "Advance bookings are currently open for Today and Tomorrow only.",
+                        );
+                      }}
+                      className="relative min-w-[74px] sm:min-w-[82px] py-3.5 px-3 rounded-2xl text-center flex flex-col items-center justify-center transition-all duration-200 bg-gray-50/60 border border-dashed border-gray-200 text-gray-400 opacity-40 cursor-not-allowed select-none hover:opacity-60"
+                      title="Booking not open yet (Only Today & Tomorrow available)"
+                    >
+                      <span className="text-[11px] font-bold tracking-wider uppercase text-gray-400">
+                        {slot.day}
+                      </span>
+                      <span className="text-xl sm:text-2xl font-black my-0.5 leading-none text-gray-400">
+                        {slot.displayDate.split(" ")[0]}
+                      </span>
+                      <span className="text-[11px] font-medium text-gray-400">
+                        {slot.displayDate.split(" ")[1]}
+                      </span>
+                    </div>
+                  );
+                }
+
                 return (
                   <div
                     key={index}
@@ -560,12 +663,23 @@ const Booking: React.FC<BookingProps> = ({
                       setSlotIndex(index);
                       setSlotTime("");
                     }}
-                    className={`cursor-pointer min-w-[74px] sm:min-w-[82px] py-3.5 px-3 rounded-2xl text-center flex flex-col items-center justify-center transition-all duration-200 ${
+                    className={`relative cursor-pointer min-w-[74px] sm:min-w-[82px] py-3.5 px-3 rounded-2xl text-center flex flex-col items-center justify-center transition-all duration-200 ${
                       isSelected
                         ? "bg-[#1a6cf0] text-white shadow-md shadow-blue-500/25 scale-[1.02]"
                         : "bg-white border border-gray-200 text-gray-800 hover:border-blue-300 hover:bg-blue-50/20"
                     }`}
                   >
+                    {(isToday || isTomorrow) && (
+                      <span
+                        className={`text-[9px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-full mb-0.5 ${
+                          isSelected
+                            ? "bg-white/20 text-white"
+                            : "bg-blue-50 text-blue-600"
+                        }`}
+                      >
+                        {isToday ? "Today" : "Tomorrow"}
+                      </span>
+                    )}
                     <span
                       className={`text-[11px] font-bold tracking-wider uppercase ${isSelected ? "text-white/90" : "text-gray-900"}`}
                     >
@@ -586,12 +700,44 @@ const Booking: React.FC<BookingProps> = ({
               })}
             </div>
 
-            {/* Time Slot Rows (Vertical List) */}
-            <div className="flex flex-col gap-3 mt-6">
-              {shopSlots.length > 0 &&
-                shopSlots[slotIndex] &&
-                shopSlots[slotIndex].times.map(
-                  (time: string, index: number) => {
+            {/* If Selected Slot is Closed */}
+            {shopSlots.length > 0 &&
+              shopSlots[slotIndex] &&
+              shopSlots[slotIndex].isClosed && (
+                <div className="mt-6 p-5 rounded-2xl bg-red-50/80 border border-red-200 text-red-800 flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="15" y1="9" x2="9" y2="15" />
+                      <line x1="9" y1="9" x2="15" y2="15" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm sm:text-base text-red-800">
+                      Salon is Closed on {shopSlots[slotIndex].dayFullName}s
+                    </h4>
+                    <p className="text-xs text-red-600 mt-0.5">
+                      Bookings cannot be scheduled on weekly off/closed days.
+                      Please select an available open day.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+            {/* Time Slot Rows (Vertical List) - Only when selected day is open & selectable */}
+            {shopSlots.length > 0 &&
+              shopSlots[slotIndex] &&
+              !shopSlots[slotIndex].isClosed &&
+              !shopSlots[slotIndex].isFutureDisabled && (
+                <div className="flex flex-col gap-3 mt-6">
+                  {shopSlots[slotIndex].times.map(
+                    (time: string, index: number) => {
                     const isOccupied = isSlotOccupied(
                       shopSlots[slotIndex].date,
                       time,
@@ -690,9 +836,9 @@ const Booking: React.FC<BookingProps> = ({
                         </div>
                       </div>
                     );
-                  },
-                )}
-            </div>
+                  })}
+                </div>
+              )}
 
             {/* Guest Details */}
             {!isLoggedIn && (
@@ -817,8 +963,14 @@ const Booking: React.FC<BookingProps> = ({
             <div className="flex justify-end mt-6">
               <button
                 onClick={handleBooking}
-                disabled={loading}
-                className="w-full sm:w-auto sm:min-w-55 bg-[#1a6cf0] hover:bg-blue-600 active:scale-[0.99] text-white font-semibold py-3.5 sm:py-3 px-6 sm:px-8 rounded-2xl flex items-center justify-center gap-3 text-sm sm:text-base shadow-md shadow-blue-500/20 transition-all duration-150 disabled:bg-blue-300 disabled:cursor-not-allowed cursor-pointer"
+                disabled={
+                  loading ||
+                  !shopSlots[slotIndex] ||
+                  shopSlots[slotIndex].isClosed ||
+                  shopSlots[slotIndex].isFutureDisabled ||
+                  !slotTime
+                }
+                className="w-full sm:w-auto sm:min-w-55 bg-[#1a6cf0] hover:bg-blue-600 active:scale-[0.99] text-white font-semibold py-3.5 sm:py-3 px-6 sm:px-8 rounded-2xl flex items-center justify-center gap-3 text-sm sm:text-base shadow-md shadow-blue-500/20 transition-all duration-150 disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none disabled:cursor-not-allowed cursor-pointer"
               >
                 <span>{loading ? "Booking..." : "Book the slot"}</span>
                 <svg
