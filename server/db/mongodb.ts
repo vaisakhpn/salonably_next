@@ -42,19 +42,35 @@ async function dbConnect() {
       // Ignore if cannot reset
     }
 
+    const maxPoolSize = process.env.MONGODB_MAX_POOL_SIZE
+      ? parseInt(process.env.MONGODB_MAX_POOL_SIZE, 10)
+      : 50;
+    const minPoolSize = process.env.MONGODB_MIN_POOL_SIZE
+      ? parseInt(process.env.MONGODB_MIN_POOL_SIZE, 10)
+      : 5;
+
     const opts: mongoose.ConnectOptions = {
       bufferCommands: false,
       dbName: "salon",
-      maxPoolSize: 5, // Limit connection pool size per serverless container
-      minPoolSize: 1,
-      serverSelectionTimeoutMS: 5000, // Fail fast if DB is unreachable
+      maxPoolSize,
+      minPoolSize,
+      serverSelectionTimeoutMS: process.env.NODE_ENV === "production" ? 10000 : 30000,
       socketTimeoutMS: 45000,
-      autoIndex: process.env.NODE_ENV !== "production", // Avoid building indexes on production traffic
+      autoIndex: process.env.NODE_ENV !== "production",
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongooseInstance) => {
-      return mongooseInstance.connection;
-    });
+    cached.promise = mongoose
+      .connect(MONGODB_URI!, opts)
+      .then((mongooseInstance) => {
+        return mongooseInstance.connection;
+      })
+      .catch((err) => {
+        console.error("MongoDB Connection Error:", err.message);
+        console.error(
+          "💡 If you're on localhost, please check MongoDB Atlas -> Network Access -> Add IP Address -> 'Add Current IP Address' or '0.0.0.0/0'."
+        );
+        throw err;
+      });
   }
 
   try {

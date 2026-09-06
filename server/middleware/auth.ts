@@ -61,3 +61,19 @@ export async function getShop() {
     return null;
   }
 }
+
+export async function isAdmin() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("admin_token");
+
+  if (!token) {
+    return false;
+  }
+
+  try {
+    const decoded = jwt.verify(token.value, JWT_SECRET) as { role?: string; email?: string };
+    return decoded && decoded.role === "admin";
+  } catch (error) {
+    return false;
+  }
+}

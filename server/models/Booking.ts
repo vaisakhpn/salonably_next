@@ -36,6 +36,19 @@ bookingSchema.index(
   }
 );
 
+// TTL Index: Automatically purge expired holds from database
+bookingSchema.index(
+  { expiresAt: 1 },
+  { 
+    expireAfterSeconds: 0,
+    partialFilterExpression: { status: "held" }
+  }
+);
+
+// High-speed compound queries for user history and salon schedule
+bookingSchema.index({ userId: 1, createdAt: -1 });
+bookingSchema.index({ shopId: 1, status: 1, slotDate: 1 });
+
 const BookingModel =
   mongoose.models.booking ||
   mongoose.models.bookings ||
