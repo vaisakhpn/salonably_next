@@ -9,6 +9,7 @@ import {
   validateReferrerPhone,
   normalizePhoneNumber,
 } from "@/server/services/referralService";
+import { assignShopToCohort } from "@/server/services/competitionService";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -166,6 +167,18 @@ export async function POST(req: Request) {
       } catch (refError) {
         console.error("Error creating referral link during shop registration:", refError);
       }
+    }
+
+    // Enroll shop in Quarterly Top Shop Competition cohort
+    try {
+      await assignShopToCohort(newShop._id, {
+        name: newShop.name,
+        ownerName: newShop.ownerName,
+        phone: newShop.phone,
+        date: newShop.date,
+      });
+    } catch (cohortErr) {
+      console.error("Error assigning shop to competition cohort during registration:", cohortErr);
     }
 
     // Generate JWT Auth Token

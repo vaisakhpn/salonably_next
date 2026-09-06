@@ -4,6 +4,7 @@ import BookingModel from "@/server/models/Booking";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 import { creditBookingCommission } from "@/server/services/referralService";
+import { recordBookingCompletionMilestone } from "@/server/services/competitionService";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -64,6 +65,13 @@ export async function POST(req: Request) {
         await creditBookingCommission(booking._id, booking.shopId);
       } catch (commissionError) {
         console.error("Error awarding referral booking commission:", commissionError);
+      }
+
+      // Record competition booking completion milestone
+      try {
+        await recordBookingCompletionMilestone(booking.shopId, booking._id);
+      } catch (cohortMilestoneErr) {
+        console.error("Error updating competition milestone:", cohortMilestoneErr);
       }
     }
 

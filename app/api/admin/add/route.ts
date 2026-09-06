@@ -3,6 +3,7 @@ import { v2 as cloudinary } from "cloudinary";
 import dbConnect from "@/server/db/mongodb";
 import ShopModel from "@/server/models/Shop";
 import bcrypt from "bcryptjs";
+import { assignShopToCohort } from "@/server/services/competitionService";
 
 // Configure Cloudinary
 const cloudinaryConfig = {
@@ -101,6 +102,18 @@ export async function POST(req: Request) {
       availableSlots: availableSlots ? JSON.parse(availableSlots) : [],
       closedDays: closedDays ? JSON.parse(closedDays) : [],
     });
+
+    // Enroll shop in Quarterly Top Shop Competition cohort
+    try {
+      await assignShopToCohort(newShop._id, {
+        name: newShop.name,
+        ownerName: newShop.ownerName,
+        phone: newShop.phone,
+        date: newShop.date,
+      });
+    } catch (cohortErr) {
+      console.error("Error assigning shop to competition cohort during admin add:", cohortErr);
+    }
 
     return NextResponse.json(
       {
