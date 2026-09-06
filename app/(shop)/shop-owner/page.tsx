@@ -2,12 +2,12 @@ import Dashboard from "@/components/Shop/Dashboard";
 import LoginUser from "@/components/Shop/LoginPage";
 import Navbar from "@/components/ui/Navbar";
 import Footer from "@/components/ui/Footer";
-import React from "react";
 import { cookies } from "next/headers";
 import dbConnect from "@/server/db/mongodb";
 import jwt from "jsonwebtoken";
 import ShopModel from "@/server/models/Shop";
 import BookingModel from "@/server/models/Booking";
+import { getShopLiveRanking } from "@/server/services/competitionService";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -27,7 +27,7 @@ const page = async () => {
     );
   }
 
-  let shopId;
+  let shopId: string;
   try {
     // Decode token to identify the specific shop
     const decoded = jwt.verify(token.value, JWT_SECRET) as any;
@@ -47,25 +47,41 @@ const page = async () => {
 
   await dbConnect();
 
-  const bookingsCount = await BookingModel.countDocuments({ shopId: shopId });
-  const distinctUsers = await BookingModel.distinct("userId", {
-    shopId: shopId,
-  });
+  const [bookingsCount, distinctUsers, latestBookings, shopRecord, competitionData] =
+    await Promise.all([
+      BookingModel.countDocuments({ shopId: shopId }),
+      BookingModel.distinct("userId", { shopId: shopId }),
+      BookingModel.find({ shopId: shopId }).sort({ _id: -1 }).limit(5).lean(),
+      ShopModel.findById(shopId).select("name").lean(),
+      getShopLiveRanking(shopId),
+    ]);
 
-  const latestBookings = await BookingModel.find({ shopId: shopId })
-    .sort({ _id: -1 })
-    .limit(5)
-    .lean();
-
-  const shop = await ShopModel.findById(shopId).select("name").lean();
+  const quarterlyReward = {
+    rank: competitionData.rank,
+    completedBookings: competitionData.completedBookings,
+    topRankBookings: competitionData.topRankBookings,
+    isWinner: competitionData.isWinner,
+    rewardAmount: competitionData.rewardAmount,
+    maxReward: competitionData.maxReward,
+    quarter: competitionData.quarter,
+    leaderboard: competitionData.leaderboard,
+    isUpcoming: competitionData.isUpcoming,
+    status: competitionData.status,
+    competitionStartDate: competitionData.competitionStartDate
+      ? new Date(competitionData.competitionStartDate).toISOString()
+      : undefined,
+    daysUntilStart: competitionData.daysUntilStart,
+    cohortName: competitionData.cohortName,
+  };
 
   const dashData = {
     shopId: String(shopId),
-    shopName: shop?.name || "Shop Owner",
+    shopName: (shopRecord as any)?.name || "Shop Owner",
     shops: 1,
     bookings: bookingsCount,
     customers: distinctUsers.length,
     latestBookings: JSON.parse(JSON.stringify(latestBookings)),
+    quarterlyReward,
   };
 
   return (

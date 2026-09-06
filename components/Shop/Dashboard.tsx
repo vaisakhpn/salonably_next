@@ -8,6 +8,9 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import WelcomeModal from "./WelcomeModal";
+import QuarterlyTopShopCard from "./QuarterlyTopShopCard";
+import QuarterlyWinnerModal from "./QuarterlyWinnerModal";
+import QuarterlyLeaderboardModal from "./QuarterlyLeaderboardModal";
 
 interface ShopData {
   name: string;
@@ -30,12 +33,37 @@ interface Booking {
   isCompleted: boolean;
 }
 
+export interface LeaderboardEntry {
+  rank: number;
+  name: string;
+  bookings: number;
+  prize: string;
+  isCurrent: boolean;
+}
+
+export interface QuarterlyRewardData {
+  rank: number;
+  completedBookings: number;
+  topRankBookings: number;
+  isWinner: boolean;
+  rewardAmount: string | number;
+  maxReward: string | number;
+  quarter: string;
+  leaderboard: LeaderboardEntry[];
+  isUpcoming?: boolean;
+  status?: string;
+  competitionStartDate?: string;
+  daysUntilStart?: number;
+  cohortName?: string;
+}
+
 interface DashboardData {
   shopId?: string;
   shopName?: string;
   bookings: number;
   customers: number;
   latestBookings: Booking[];
+  quarterlyReward?: QuarterlyRewardData;
 }
 
 interface DashboardProps {
@@ -45,6 +73,8 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ dashData }) => {
   const router = useRouter();
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showWinnerModal, setShowWinnerModal] = useState(false);
+  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -54,9 +84,11 @@ const Dashboard: React.FC<DashboardProps> = ({ dashData }) => {
       const hasSeen = localStorage.getItem(storageKey);
       if (!hasSeen) {
         setShowWelcomeModal(true);
+      } else if (dashData.quarterlyReward?.isWinner) {
+        setShowWinnerModal(true);
       }
     }
-  }, [dashData.shopId]);
+  }, [dashData.shopId, dashData.quarterlyReward?.isWinner]);
 
   const handleCloseWelcomeModal = () => {
     if (typeof window !== "undefined") {
@@ -66,6 +98,9 @@ const Dashboard: React.FC<DashboardProps> = ({ dashData }) => {
       localStorage.setItem(storageKey, "true");
     }
     setShowWelcomeModal(false);
+    if (dashData.quarterlyReward?.isWinner) {
+      setShowWinnerModal(true);
+    }
   };
 
   const cancelBooking = async (id: string) => {
@@ -394,6 +429,53 @@ const Dashboard: React.FC<DashboardProps> = ({ dashData }) => {
           )}
         </div>
       </div>
+
+      {/* Quarterly Top Shop Section (Matches UI Design Language) */}
+      <QuarterlyTopShopCard
+        isWinner={!!dashData.quarterlyReward?.isWinner}
+        shopName={dashData.shopName}
+        rank={dashData.quarterlyReward?.rank || 1}
+        completedBookings={
+          dashData.quarterlyReward?.completedBookings ?? dashData.bookings ?? 0
+        }
+        topRankBookings={
+          dashData.quarterlyReward?.topRankBookings ||
+          Math.max(dashData.quarterlyReward?.completedBookings || 0, 1)
+        }
+        rewardWon={dashData.quarterlyReward?.rewardAmount || "₹5,000 – ₹10,000"}
+        maxReward={dashData.quarterlyReward?.maxReward || "₹5,000 – ₹10,000"}
+        quarter={dashData.quarterlyReward?.quarter || "Q3 • 2026"}
+        isUpcoming={dashData.quarterlyReward?.isUpcoming}
+        daysUntilStart={dashData.quarterlyReward?.daysUntilStart}
+        competitionStartDate={dashData.quarterlyReward?.competitionStartDate}
+        cohortName={dashData.quarterlyReward?.cohortName}
+        onViewLeaderboard={() => setShowLeaderboardModal(true)}
+        onViewReward={() => setShowWinnerModal(true)}
+      />
+
+      {/* Quarterly Winner Modal Popup */}
+      <QuarterlyWinnerModal
+        isOpen={showWinnerModal}
+        onClose={() => setShowWinnerModal(false)}
+        shopName={dashData.shopName || "Salon Partner"}
+        rewardAmount={dashData.quarterlyReward?.rewardAmount || "₹5,000 – ₹10,000"}
+        completedBookings={dashData.quarterlyReward?.completedBookings ?? dashData.bookings ?? 0}
+        quarter={dashData.quarterlyReward?.quarter || "Q3 • 2026"}
+        rank={dashData.quarterlyReward?.rank || 1}
+      />
+
+      {/* Quarterly Leaderboard Modal Popup */}
+      <QuarterlyLeaderboardModal
+        isOpen={showLeaderboardModal}
+        onClose={() => setShowLeaderboardModal(false)}
+        shopName={dashData.shopName || "Your Salon"}
+        quarter={dashData.quarterlyReward?.quarter || "Q3 • 2026"}
+        leaderboard={dashData.quarterlyReward?.leaderboard}
+        isUpcoming={dashData.quarterlyReward?.isUpcoming}
+        competitionStartDate={dashData.quarterlyReward?.competitionStartDate}
+        daysUntilStart={dashData.quarterlyReward?.daysUntilStart}
+        cohortName={dashData.quarterlyReward?.cohortName}
+      />
 
       {/* Business Overview Card (Matches UI Design) */}
       <div className="bg-gradient-to-br from-indigo-50/40 via-purple-50/20 to-blue-50/30 rounded-2xl border border-indigo-100/50 p-5 relative overflow-hidden shadow-xs">
