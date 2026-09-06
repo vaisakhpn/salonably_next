@@ -113,9 +113,9 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold text-sm sm:text-base shadow-lg shadow-blue-500/25 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2"
+            className="w-full py-3.5 sm:py-3 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-sm sm:text-base shadow-md shadow-blue-500/20 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:pointer-events-none mt-3"
           >
-            <span>Let’s Grow Your Salon 🚀</span>
+            <span>Let’s Grow Your Salon </span>
           </button>
         </div>
       </div>
