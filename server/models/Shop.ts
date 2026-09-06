@@ -42,6 +42,11 @@ shopSchema.index({
   "address.line2": "text"
 });
 
+if (process.env.NODE_ENV !== "production") {
+  if (mongoose.models.shop) delete (mongoose.models as any).shop;
+  if (mongoose.models.shops) delete (mongoose.models as any).shops;
+}
+
 const ShopModel =
   mongoose.models.shop ||
   mongoose.models.shops ||
