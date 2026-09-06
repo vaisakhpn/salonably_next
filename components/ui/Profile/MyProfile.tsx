@@ -295,6 +295,37 @@ const MyProfile = ({ initialUserData }: MyProfileProps) => {
         )}
       </div>
 
+      {/* Refer & Earn Banner */}
+      <Link
+        href="/refer"
+        className="block relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-3xl p-5 sm:p-6 text-white shadow-md hover:shadow-lg transition-all group cursor-pointer"
+      >
+        <div className="flex items-center justify-between relative z-10">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl shrink-0 group-hover:scale-110 transition-transform">
+              🎁
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-bold text-base sm:text-lg">Refer Salons & Earn Real Cash</h3>
+                <span className="bg-yellow-400 text-yellow-950 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full">
+                  ₹100 + ₹3–₹10/booking (~₹500–₹2,000/mo)
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-indigo-100 mt-0.5">
+                Share your referral number with salon owners and withdraw earnings directly to UPI.
+              </p>
+            </div>
+          </div>
+          <div className="hidden sm:flex items-center gap-1.5 font-bold text-xs bg-white text-indigo-700 px-4 py-2 rounded-full shadow-xs shrink-0 group-hover:bg-indigo-50 transition-colors">
+            <span>Referrals Dashboard</span>
+            <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </div>
+      </Link>
+
       {/* Quick Access Action Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* My Bookings Quick Card */}

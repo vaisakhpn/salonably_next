@@ -34,11 +34,12 @@ const NavUserProfile = ({ user }: { user: UserProps }) => {
 
   const handleLogout = async () => {
     try {
-      const res = await fetch("/api/auth/logout", { method: "POST" });
-      if (res.ok) {
-        router.push("/login"); // or /
-        router.refresh();
-      }
+      await Promise.allSettled([
+        fetch("/api/auth/logout", { method: "POST" }),
+        fetch("/api/shop/logout", { method: "POST" }),
+      ]);
+      router.push("/login");
+      router.refresh();
     } catch (error) {
       console.error("Logout failed", error);
     }
@@ -133,6 +134,20 @@ const NavUserProfile = ({ user }: { user: UserProps }) => {
                 />
               </svg>
               <span>My Bookings</span>
+            </Link>
+
+            <Link
+              href="/refer"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center justify-between px-3 py-2 text-xs sm:text-sm font-medium text-indigo-700 hover:text-indigo-900 hover:bg-indigo-50/70 rounded-xl transition-colors"
+            >
+              <div className="flex items-center gap-2.5">
+                <span className="text-sm">🎁</span>
+                <span>Refer & Earn</span>
+              </div>
+              <span className="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded-full">
+                ₹100
+              </span>
             </Link>
           </div>
 

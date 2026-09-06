@@ -49,6 +49,20 @@ const Header = () => {
             </div>
           </div>
 
+          {/* Refer & Earn Promo Button with Attention-Grabbing Bouncing Animation */}
+          <div className="pt-1">
+            <Link
+              href="/refer"
+              className="group inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold text-indigo-700 bg-indigo-50/90 hover:bg-indigo-100 hover:text-indigo-900 border border-indigo-200/90 hover:border-indigo-300 transition-all duration-200 active:scale-95 shadow-md shadow-indigo-100 animate-bounce hover:animate-none cursor-pointer"
+            >
+              <span className="text-sm transition-transform group-hover:scale-125">🎁</span>
+              <span>Refer & Earn</span>
+              <span className="inline-block text-[10px] bg-indigo-600 text-white font-extrabold px-1.5 py-0.2 rounded-full shadow-xs">
+                ₹100
+              </span>
+            </Link>
+          </div>
+
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-2">
             <Link href="/shops" className="cursor-pointer">

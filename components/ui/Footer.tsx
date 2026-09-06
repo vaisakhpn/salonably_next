@@ -46,6 +46,7 @@ const Footer = () => {
             <ul className="space-y-2 text-xs text-gray-500">
               <li><Link href="/shop-owner" className="hover:text-blue-600 transition-colors">List Your Salon</Link></li>
               <li><Link href="/shop-owner" className="hover:text-blue-600 transition-colors">Business Login</Link></li>
+              <li><Link href="/refer" className="hover:text-blue-600 transition-colors">Refer & Earn ₹100+</Link></li>
             </ul>
           </div>
 

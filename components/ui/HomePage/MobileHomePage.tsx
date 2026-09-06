@@ -171,6 +171,20 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({ shops }) => {
             </div>
           </div>
 
+          {/* Refer & Earn Promo Button with Attention-Grabbing Bouncing Animation */}
+          <div className="pt-0.5">
+            <Link
+              href="/refer"
+              className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-white bg-indigo-600/60 hover:bg-indigo-600/80 border border-indigo-300/50 hover:border-indigo-200 backdrop-blur-md transition-all duration-200 active:scale-95 shadow-lg shadow-indigo-950/40 animate-bounce hover:animate-none cursor-pointer"
+            >
+              <span className="text-xs transition-transform group-hover:scale-125">🎁</span>
+              <span>Refer & Earn</span>
+              <span className="inline-block text-[10px] bg-indigo-500 text-white font-extrabold px-1.5 py-0.2 rounded-full shadow-xs">
+                ₹100
+              </span>
+            </Link>
+          </div>
+
           {/* Action Buttons */}
           <div className="flex flex-row items-center gap-2.5 pt-1">
             <Link href="/shops" className="cursor-pointer">
