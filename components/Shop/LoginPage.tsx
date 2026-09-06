@@ -24,13 +24,48 @@ const LoginUser = () => {
   const [about, setAbout] = useState("");
   const [addressLine1, setAddressLine1] = useState("");
   const [addressLine2, setAddressLine2] = useState("");
+  const [referralPhone, setReferralPhone] = useState("");
+  const [referrerName, setReferrerName] = useState<string | null>(null);
+  const [validatingReferral, setValidatingReferral] = useState(false);
+  const [referralError, setReferralError] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   // Common UI States
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // Real-time Referral Phone Validation
+  const handleReferralPhoneChange = async (val: string) => {
+    const clean = val.replace(/\D/g, "");
+    setReferralPhone(clean);
+    setReferrerName(null);
+    setReferralError("");
+
+    if (clean.length === 10) {
+      if (clean === phone.replace(/\D/g, "")) {
+        setReferralError("Self-referral is not allowed.");
+        return;
+      }
+
+      setValidatingReferral(true);
+      try {
+        const res = await fetch(`/api/referral/validate-phone?phone=${clean}`);
+        const data = await res.json();
+        if (data.valid) {
+          setReferrerName(data.referrerName || "Verified Member");
+        } else {
+          setReferralError(data.message || "Referral number not found.");
+        }
+      } catch (err) {
+        // Network fallback
+      } finally {
+        setValidatingReferral(false);
+      }
+    }
+  };
 
   // Login Submit Handler
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -68,6 +103,13 @@ const LoginUser = () => {
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!imageFile) {
+      setError("Please upload a photo of your salon/shop to continue.");
+      toast.error("Please upload a photo of your salon/shop.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -81,6 +123,7 @@ const LoginUser = () => {
       if (about) formData.append("about", about);
       if (addressLine1) formData.append("addressLine1", addressLine1);
       if (addressLine2) formData.append("addressLine2", addressLine2);
+      if (referralPhone) formData.append("referralPhone", referralPhone);
       if (imageFile) formData.append("image", imageFile);
 
       const response = await fetch("/api/shop/register", {
@@ -566,16 +609,115 @@ const LoginUser = () => {
                   />
                 </div>
 
+                {/* Referral Phone Number (Optional) */}
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 border border-blue-100/80">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-blue-900 flex items-center gap-1.5">
+                      <span>🎁 Referral Phone Number</span>
+                      <span className="text-[10px] font-normal text-gray-500 normal-case">(Optional)</span>
+                    </label>
+                    {validatingReferral && (
+                      <span className="text-[11px] text-blue-600 font-medium flex items-center gap-1">
+                        <svg className="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        </svg>
+                        Checking...
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-xs font-bold text-gray-400 select-none">
+                      +91
+                    </span>
+                    <input
+                      type="tel"
+                      maxLength={10}
+                      placeholder="9876543210"
+                      value={referralPhone}
+                      onChange={(e) => handleReferralPhoneChange(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 bg-white border border-blue-200/80 rounded-xl text-gray-900 placeholder-gray-400 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 transition-all tracking-wider"
+                    />
+                  </div>
+
+                  {referrerName && (
+                    <div className="mt-1.5 flex items-center gap-1.5 text-xs text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/70">
+                      <svg className="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span>Referred by: {referrerName}</span>
+                    </div>
+                  )}
+
+                  {referralError && (
+                    <p className="mt-1 text-[11px] text-red-600 font-medium">
+                      ⚠️ {referralError}
+                    </p>
+                  )}
+
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    If someone invited you to LockMyTime, enter their mobile number here.
+                  </p>
+                </div>
+
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                    Shop Image (Optional)
+                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1 flex items-center justify-between">
+                    <span>Salon / Shop Photo *</span>
+                    <span className="text-[11px] text-blue-600 font-medium lowercase">
+                      {imageFile ? "1 photo selected" : "Required"}
+                    </span>
                   </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                    className="w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 cursor-pointer"
-                  />
+
+                  {imagePreview ? (
+                    <div className="relative p-2 bg-gray-50 border border-blue-200 rounded-2xl flex items-center gap-3">
+                      <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200 shrink-0 bg-white">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={imagePreview}
+                          alt="Salon Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-gray-900 truncate">
+                          {imageFile?.name}
+                        </p>
+                        <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">
+                          ✓ Photo ready for upload
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageFile(null);
+                          setImagePreview(null);
+                        }}
+                        className="px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                        title="Remove Photo"
+                      >
+                        Change
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <input
+                        type="file"
+                        id="shop-image-input"
+                        accept="image/*"
+                        required
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          setImageFile(file);
+                          if (file) {
+                            setImagePreview(URL.createObjectURL(file));
+                          } else {
+                            setImagePreview(null);
+                          }
+                        }}
+                        className="w-full text-xs text-gray-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer bg-gray-50 border border-dashed border-gray-300 rounded-xl p-2"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Submit Registration Button */}

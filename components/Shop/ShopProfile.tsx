@@ -39,13 +39,36 @@ const useShopProfile = (initialData: ShopData) => {
   const router = useRouter();
   const [isEdit, setIsEdit] = useState(false);
   const [isTimeSlotEdit, setIsTimeSlotEdit] = useState(false);
+  
+  const safeData: ShopData = {
+    ...initialData,
+    name: initialData?.name || "",
+    email: initialData?.email || "",
+    phone: initialData?.phone || "",
+    image:
+      initialData?.image ||
+      "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&auto=format&fit=crop&q=80",
+    about: initialData?.about || "",
+    fees: typeof initialData?.fees === "number" ? initialData.fees : 500,
+    address: {
+      line1: initialData?.address?.line1 || "Main Street",
+      line2: initialData?.address?.line2 || "City Center",
+    },
+    available: typeof initialData?.available === "boolean" ? initialData.available : true,
+    availableSlots:
+      Array.isArray(initialData?.availableSlots) && initialData.availableSlots.length > 0
+        ? initialData.availableSlots
+        : ["11:00 AM", "03:00 PM", "06:30 PM"],
+    closedDays: Array.isArray(initialData?.closedDays) ? initialData.closedDays : [],
+  };
+
   const [initialSlots, setInitialSlots] = useState<string[]>(
-    initialData?.availableSlots || [],
+    safeData.availableSlots,
   );
-  const [profileData, setProfileData] = useState<ShopData>(initialData);
+  const [profileData, setProfileData] = useState<ShopData>(safeData);
   const [loading, setLoading] = useState(false);
   const [timeSlotLoading, setTimeSlotLoading] = useState(false);
-  const [imgSrc, setImgSrc] = useState(initialData?.image);
+  const [imgSrc, setImgSrc] = useState(safeData.image);
 
   const toggleEdit = () => {
     if (!isEdit) {
@@ -74,7 +97,11 @@ const useShopProfile = (initialData: ShopData) => {
   const handleAddressChange = (field: keyof Address, value: string) => {
     setProfileData((prev) => ({
       ...prev,
-      address: { ...prev.address, [field]: value },
+      address: {
+        line1: prev.address?.line1 || "",
+        line2: prev.address?.line2 || "",
+        [field]: value,
+      },
     }));
   };
 
@@ -234,14 +261,17 @@ const ShopProfile = ({ shopData }: ShopProfileProps) => {
           <div className="absolute -bottom-16 left-8">
             <Image
               className="w-32 h-32 rounded-xl border-4 border-white shadow-md object-cover bg-white"
-              src={imgSrc}
-              alt={profileData.name}
+              src={
+                imgSrc ||
+                "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&auto=format&fit=crop&q=80"
+              }
+              alt={profileData?.name || "Shop"}
               width={128}
               height={128}
               priority
               onError={() =>
                 setImgSrc(
-                  "https://cdn3.iconfinder.com/data/icons/essential-rounded/64/Rounded-31-512.png",
+                  "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=500&auto=format&fit=crop&q=80",
                 )
               }
             />
@@ -518,7 +548,7 @@ const ShopProfile = ({ shopData }: ShopProfileProps) => {
                         type="text"
                         placeholder="Address Line 1"
                         className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        value={profileData.address.line1}
+                        value={profileData.address?.line1 || ""}
                         onChange={(e) =>
                           handleAddressChange("line1", e.target.value)
                         }
@@ -527,7 +557,7 @@ const ShopProfile = ({ shopData }: ShopProfileProps) => {
                         type="text"
                         placeholder="Address Line 2"
                         className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                        value={profileData.address.line2}
+                        value={profileData.address?.line2 || ""}
                         onChange={(e) =>
                           handleAddressChange("line2", e.target.value)
                         }
@@ -535,8 +565,8 @@ const ShopProfile = ({ shopData }: ShopProfileProps) => {
                     </>
                   ) : (
                     <div className="bg-gray-50 rounded-lg p-4 text-gray-700">
-                      <p>{profileData.address.line1}</p>
-                      {profileData.address.line2 && (
+                      <p>{profileData.address?.line1 || "Main Street"}</p>
+                      {profileData.address?.line2 && (
                         <p className="mt-1">{profileData.address.line2}</p>
                       )}
                     </div>
