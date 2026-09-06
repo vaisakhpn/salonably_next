@@ -122,7 +122,7 @@ const QuarterlyTopShopCard: React.FC<QuarterlyTopShopCardProps> = ({
   // ----------------------------------------------------
   if (isUpcoming) {
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-white via-indigo-50/30 to-purple-50/40 p-5 shadow-xs transition-all hover:shadow-md">
+      <div className="relative overflow-hidden rounded-2xl border border-indigo-200/80 bg-blue-200/20 p-5 shadow-xs transition-all hover:shadow-md">
         {/* Subtle Background Glow */}
         <div className="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-indigo-500/10 blur-xl pointer-events-none" />
 
