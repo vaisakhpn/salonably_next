@@ -3,6 +3,7 @@ import dbConnect from "@/server/db/mongodb";
 import BookingModel from "@/server/models/Booking";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
+import { creditBookingCommission } from "@/server/services/referralService";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -21,6 +22,10 @@ export async function POST(req: Request) {
 
     const { appointmentId } = await req.json();
 
+    if (!appointmentId) {
+      return NextResponse.json({ message: "Appointment ID is required" }, { status: 400 });
+    }
+
     await dbConnect();
 
     const booking = await BookingModel.findById(appointmentId);
@@ -37,17 +42,33 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 403 });
     }
 
+    // Guard against completing cancelled bookings
+    if (booking.cancelled || booking.status === "cancelled") {
+      return NextResponse.json(
+        { message: "Cannot complete a cancelled appointment." },
+        { status: 400 }
+      );
+    }
+
+    const wasAlreadyCompleted = booking.isCompleted || booking.status === "completed";
+
     booking.isCompleted = true;
-    booking.payment = true; // Assuming completion implies payment or vice versa, or just separate.
-    // Often completion means service done & paid.
-    // Admin code or logic might suggest payment marked here too.
-    // Let's toggle isCompleted and status.
+    booking.payment = true;
     booking.status = "completed";
 
     await booking.save();
 
+    // Trigger Referral Booking Commission (Idempotent: only awarded once per completed booking)
+    if (!wasAlreadyCompleted) {
+      try {
+        await creditBookingCommission(booking._id, booking.shopId);
+      } catch (commissionError) {
+        console.error("Error awarding referral booking commission:", commissionError);
+      }
+    }
+
     return NextResponse.json(
-      { message: "Appointment completed" },
+      { message: "Appointment completed successfully" },
       { status: 200 }
     );
   } catch (error) {
