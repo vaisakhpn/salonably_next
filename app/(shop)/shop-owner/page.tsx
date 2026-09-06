@@ -60,6 +60,7 @@ const page = async () => {
   const shop = await ShopModel.findById(shopId).select("name").lean();
 
   const dashData = {
+    shopId: String(shopId),
     shopName: shop?.name || "Shop Owner",
     shops: 1,
     bookings: bookingsCount,
