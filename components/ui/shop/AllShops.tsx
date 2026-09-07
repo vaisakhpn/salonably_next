@@ -20,13 +20,13 @@ const AllShops: React.FC<AllShopsProps> = ({
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* ---------- Header ---------- */}
       <div className="mb-8 text-center sm:text-left">
-        <h1 className="text-3xl font-bold text-gray-900">
-          {query ? `Search Results for "${query}"` : "Salons"}
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+          {query ? `Search Results for "${query}" | LockMyTime` : "Browse Salons on LockMyTime"}
         </h1>
-        <p className="text-gray-500 mt-2 text-lg">
+        <p className="text-gray-500 mt-2 text-sm sm:text-base">
           {query
             ? `Showing salons matching your search`
-            : `Book your preferred time slot instantly`}
+            : `Book your preferred time slot instantly with top-rated salons`}
         </p>
       </div>
 

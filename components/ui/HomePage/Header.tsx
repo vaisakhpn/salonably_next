@@ -26,7 +26,7 @@ const Header = () => {
             <span className="text-blue-600">LockMyTime</span>
             <br />
             <span className="text-gray-800 text-2xl sm:text-4xl lg:text-5xl font-bold">
-              Glam Up with us
+              Book Salon & Beauty Appointments
             </span>
           </h1>
 

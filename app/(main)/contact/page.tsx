@@ -11,10 +11,13 @@ export const metadata: Metadata = {
 
 const Contact = () => {
   return (
-    <div>
-      <div className="text-center text-2xl pt-10 text-gray-500">
-        <p>
-          CONTACT <span className="text-gray-700 font-medium">US</span>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6">
+      <div className="text-center pt-10">
+        <h1 className="text-2xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+          Contact <span className="text-blue-600">LockMyTime</span>
+        </h1>
+        <p className="text-xs sm:text-sm text-gray-500 mt-2">
+          We are here to assist with inquiries, support, and salon partnerships
         </p>
       </div>
       <div className="my-10 flex flex-col justify-center md:flex-row gap-10 mb-28 text-sm">

@@ -17,13 +17,14 @@ const Navbar = async () => {
         <Link
           className="flex items-center gap-2 cursor-pointer shrink-0"
           href="/"
+          aria-label="LockMyTime"
         >
           <Image
             src={lockmytime}
             className="w-9 sm:w-11 h-9 sm:h-11 rounded-full object-cover"
             alt="LockMyTime Logo"
           />
-          <span className="font-bold hidden md:inline-block text-lg sm:text-2xl text-black tracking-tight">
+          <span className="font-bold text-lg sm:text-2xl text-black tracking-tight inline-block">
             Lock<span className="text-blue-600">My</span>Time
           </span>
         </Link>

@@ -22,7 +22,7 @@ const DiscoverPage = () => {
               Explore Diverse options
             </p>
             <p className="md:text-lg text-xs font-light text-black ">
-              Browse through a curated selection of top-rated saloons in your
+              Browse through a curated selection of top-rated salons in your
               area, from hair salons to nail salons and spas
             </p>
           </div>

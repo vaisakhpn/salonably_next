@@ -148,8 +148,8 @@ const MobileHomePage: React.FC<MobileHomePageProps> = ({ shops }) => {
             <span className="text-blue-400 font-extrabold block text-2xl sm:text-4xl drop-shadow-xs">
               LockMyTime
             </span>
-            <span className="text-gray-100 font-bold text-sm sm:text-xl">
-              Glam Up with us
+            <span className="text-gray-100 font-bold text-sm sm:text-xl block mt-0.5">
+              Book Salon & Beauty Appointments
             </span>
           </h1>
 

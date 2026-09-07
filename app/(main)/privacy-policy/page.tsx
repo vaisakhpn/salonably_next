@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const PrivacyPolicy = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-16">
-      <h1 className="text-3xl font-bold mb-8 text-gray-900">Privacy Policy</h1>
+      <h1 className="text-3xl font-bold mb-8 text-gray-900">LockMyTime Privacy Policy</h1>
 
       <div className="space-y-8 text-gray-600">
         <section>
