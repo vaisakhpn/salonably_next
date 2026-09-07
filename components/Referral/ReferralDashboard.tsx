@@ -29,7 +29,9 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
   profile,
   referrals,
 }) => {
-  const [activeTab, setActiveTab] = useState<"OVERVIEW" | "REFERRALS">("OVERVIEW");
+  const [activeTab, setActiveTab] = useState<"OVERVIEW" | "REFERRALS">(
+    "OVERVIEW",
+  );
   const [copied, setCopied] = useState(false);
 
   const handleCopyPhone = () => {
@@ -74,7 +76,8 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
               Welcome, {user.name}!
             </h1>
             <p className="text-xs sm:text-sm text-blue-100 max-w-lg leading-relaxed">
-              Earn ₹100 for every verified salon you refer, plus ₹3 – ₹10 lifetime commission per booking (around ₹500 – ₹2,000 monthly)!
+              Earn ₹100 for every verified salon you refer, plus ₹3 – ₹10
+              lifetime commission per booking (around ₹500 – ₹2,000 monthly)!
             </p>
           </div>
 
@@ -95,8 +98,18 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                 onClick={handleCopyPhone}
                 className="flex-1 py-2 px-3 rounded-xl bg-white text-blue-600 hover:bg-blue-50 font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all active:scale-95 cursor-pointer"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                  />
                 </svg>
                 <span>{copied ? "Copied!" : "Copy Number"}</span>
               </button>
@@ -106,8 +119,18 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                 onClick={handleShareInvite}
                 className="py-2 px-3.5 rounded-xl bg-white/20 hover:bg-white/30 text-white font-bold text-xs flex items-center justify-center gap-1.5 backdrop-blur-sm transition-all active:scale-95 cursor-pointer"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                  />
                 </svg>
                 <span>Share</span>
               </button>
@@ -129,7 +152,9 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
           <p className="text-xl sm:text-2xl font-black text-gray-900 mt-2">
             ₹{profile.totalEarned}
           </p>
-          <p className="text-[11px] text-gray-400 mt-0.5">Verified earnings to date</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            Verified earnings to date
+          </p>
         </div>
 
         {/* Pending Earnings */}
@@ -143,13 +168,17 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
           <p className="text-xl sm:text-2xl font-black text-amber-600 mt-2">
             ₹{profile.pendingBalance}
           </p>
-          <p className="text-[11px] text-gray-400 mt-0.5">Awaiting admin verification</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            Awaiting admin verification
+          </p>
         </div>
 
         {/* Available to Withdraw */}
         <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-100 shadow-xs border-b-2 border-b-emerald-500">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold text-gray-500">Available Balance</p>
+            <p className="text-xs font-semibold text-gray-500">
+              Available Balance
+            </p>
             <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold">
               ⚡
             </div>
@@ -157,7 +186,9 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
           <p className="text-xl sm:text-2xl font-black text-emerald-600 mt-2">
             ₹{profile.availableBalance}
           </p>
-          <p className="text-[11px] text-gray-400 mt-0.5">Ready for UPI withdrawal</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            Ready for UPI withdrawal
+          </p>
         </div>
 
         {/* Total Withdrawn */}
@@ -171,7 +202,9 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
           <p className="text-xl sm:text-2xl font-black text-indigo-600 mt-2">
             ₹{profile.withdrawnAmount}
           </p>
-          <p className="text-[11px] text-gray-400 mt-0.5">Paid out to your UPI</p>
+          <p className="text-[11px] text-gray-400 mt-0.5">
+            Paid out to your UPI
+          </p>
         </div>
       </div>
 
@@ -288,7 +321,8 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                     No referred salons yet
                   </p>
                   <p className="text-xs text-gray-500 max-w-sm mx-auto">
-                    Give your referral phone number to a salon owner to get started!
+                    Give your referral phone number to a salon owner to get
+                    started!
                   </p>
                 </div>
               )}
@@ -304,11 +338,14 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                   Ready to Cash Out?
                 </h4>
                 <p className="text-xs text-indigo-200 mt-1 leading-relaxed">
-                  Withdraw your available earnings directly to your UPI ID or phone number.
+                  Withdraw your available earnings directly to your UPI ID or
+                  phone number.
                 </p>
 
                 <div className="mt-4 p-3.5 rounded-xl bg-white/10 border border-white/10 backdrop-blur-xs">
-                  <p className="text-xs text-indigo-300">Available to Withdraw</p>
+                  <p className="text-xs text-indigo-300">
+                    Available to Withdraw
+                  </p>
                   <p className="text-2xl font-black text-emerald-400 mt-0.5">
                     ₹{profile.availableBalance}
                   </p>
@@ -320,8 +357,18 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                 className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer"
               >
                 <span>Request UPI Withdrawal</span>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
                 </svg>
               </Link>
             </div>
@@ -337,9 +384,16 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                 <span className="w-7 h-7 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center text-xs mb-2 shadow-xs">
                   1
                 </span>
-                <p className="font-bold text-gray-900 text-sm">1. Refer a Salon</p>
+                <p className="font-bold text-gray-900 text-sm">
+                  1. Refer a Salon
+                </p>
                 <p className="text-gray-600 text-xs mt-1 leading-relaxed">
-                  Tell the salon or spa owner to register on LockMyTime and enter your mobile number <span className="font-bold text-blue-600 font-mono">({profile.phone})</span>.
+                  Tell the salon or Beauty Parlour owner to register on
+                  LockMyTime and enter your mobile number
+                  <span className="font-bold text-blue-600 font-mono">
+                    ({profile.phone})
+                  </span>
+                  .
                 </p>
               </div>
 
@@ -347,9 +401,12 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                 <span className="w-7 h-7 rounded-xl bg-emerald-600 text-white font-bold flex items-center justify-center text-xs mb-2 shadow-xs">
                   2
                 </span>
-                <p className="font-bold text-gray-900 text-sm">2. Get ₹100 Reward</p>
+                <p className="font-bold text-gray-900 text-sm">
+                  2. Get ₹100 Reward
+                </p>
                 <p className="text-gray-600 text-xs mt-1 leading-relaxed">
-                  When the admin verifies the salon, ₹100 is immediately credited to your available balance.
+                  When the admin verifies the salon, ₹100 is immediately
+                  credited to your available balance.
                 </p>
               </div>
 
@@ -357,9 +414,12 @@ const ReferralDashboard: React.FC<ReferralDashboardProps> = ({
                 <span className="w-7 h-7 rounded-xl bg-purple-600 text-white font-bold flex items-center justify-center text-xs mb-2 shadow-xs">
                   3
                 </span>
-                <p className="font-bold text-gray-900 text-sm">3. Earn ₹3 – ₹10 Per Booking</p>
+                <p className="font-bold text-gray-900 text-sm">
+                  3. Earn ₹3 – ₹10 Per Booking
+                </p>
                 <p className="text-gray-600 text-xs mt-1 leading-relaxed">
-                  Earn ₹3 – ₹10 for every completed customer booking (around ₹500 – ₹2,000 monthly passive income). Withdraw anytime!
+                  Earn ₹3 – ₹10 for every completed customer booking (around
+                  ₹500 – ₹2,000 monthly passive income). Withdraw anytime!
                 </p>
               </div>
             </div>
