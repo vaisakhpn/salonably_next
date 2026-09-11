@@ -21,10 +21,39 @@ interface Slot {
   dayFullName: string;
   fullDate: Date;
   times: string[];
+  availableTimes?: string[];
   isClosed: boolean;
   isFutureDisabled: boolean;
   isSelectable: boolean;
 }
+
+const MASTER_TIME_SLOTS = [
+  "09:00 AM",
+  "09:30 AM",
+  "10:00 AM",
+  "10:30 AM",
+  "11:00 AM",
+  "11:30 AM",
+  "12:00 PM",
+  "12:30 PM",
+  "01:00 PM",
+  "01:30 PM",
+  "02:00 PM",
+  "02:30 PM",
+  "03:00 PM",
+  "03:30 PM",
+  "04:00 PM",
+  "04:30 PM",
+  "05:00 PM",
+  "05:30 PM",
+  "06:00 PM",
+  "06:30 PM",
+  "07:00 PM",
+  "07:30 PM",
+  "08:00 PM",
+  "08:30 PM",
+  "09:00 PM",
+];
 
 const Booking: React.FC<BookingProps> = ({
   shopData,
@@ -89,7 +118,9 @@ const Booking: React.FC<BookingProps> = ({
 
   const isSlotOccupied = (date: string, time: string) => {
     return occupiedSlots.some(
-      (slot) => slot.date === date && slot.time === time,
+      (slot) =>
+        slot.date === date &&
+        convertTimeToMinutes(slot.time) === convertTimeToMinutes(time),
     );
   };
 
@@ -139,8 +170,9 @@ const Booking: React.FC<BookingProps> = ({
     };
 
     const generatedSlots = generateDates().map((d) => {
-      const rawTimes =
-        shopInfo.availableSlots && shopInfo.availableSlots.length > 0
+      const shopConfiguredSlots =
+        Array.isArray(shopInfo.availableSlots) &&
+        shopInfo.availableSlots.length > 0
           ? shopInfo.availableSlots
           : [
               "10:00 AM",
@@ -151,17 +183,28 @@ const Booking: React.FC<BookingProps> = ({
               "03:00 PM",
               "04:00 PM",
               "05:00 PM",
-              "10:00 PM",
             ];
 
-      const sortedTimes = [...rawTimes].sort(
-        (a: string, b: string) =>
-          convertTimeToMinutes(a) - convertTimeToMinutes(b),
-      );
+      // Combine standard full-day slots (9:00 AM - 9:00 PM) with any custom shop slots
+      const allTimesMap = new Map<number, string>();
+      MASTER_TIME_SLOTS.forEach((slot) => {
+        allTimesMap.set(convertTimeToMinutes(slot), slot);
+      });
+      shopConfiguredSlots.forEach((slot: string) => {
+        const mins = convertTimeToMinutes(slot);
+        if (!allTimesMap.has(mins)) {
+          allTimesMap.set(mins, slot);
+        }
+      });
+
+      const sortedDisplayTimes = Array.from(allTimesMap.entries())
+        .sort((a, b) => a[0] - b[0])
+        .map((entry) => entry[1]);
 
       return {
         ...d,
-        times: sortedTimes,
+        times: sortedDisplayTimes,
+        availableTimes: shopConfiguredSlots,
       };
     });
 
@@ -194,7 +237,7 @@ const Booking: React.FC<BookingProps> = ({
             setOccupiedSlots(data.occupiedSlots);
           }
         }
-      } catch (err) {
+      } catch {
         // Silently ignore network hiccup during background polling
       }
     };
@@ -222,7 +265,7 @@ const Booking: React.FC<BookingProps> = ({
           setGuestPhone(parsed.phone);
         }
       }
-    } catch (e) {
+    } catch {
       // Silently ignore storage parsing error
     }
   }, []);
@@ -235,7 +278,7 @@ const Booking: React.FC<BookingProps> = ({
           JSON.stringify({ name: nameVal, phone: phoneVal }),
         );
       }
-    } catch (e) {
+    } catch {
       // Silently ignore storage quota/access errors
     }
   };
@@ -269,6 +312,14 @@ const Booking: React.FC<BookingProps> = ({
 
     if (isSlotPast(currentSlot.date, slotTime)) {
       toast.warning("This slot is no longer available.");
+      return;
+    }
+
+    const isConfigured = (currentSlot.availableTimes || []).some(
+      (t: string) => convertTimeToMinutes(t) === convertTimeToMinutes(slotTime),
+    );
+    if (!isConfigured) {
+      toast.warning("This slot is already booked or not available.");
       return;
     }
 
@@ -730,113 +781,70 @@ const Booking: React.FC<BookingProps> = ({
                 </div>
               )}
 
-            {/* Time Slot Rows (Vertical List) - Only when selected day is open & selectable */}
+            {/* Time Slot Grid - Only when selected day is open & selectable */}
             {shopSlots.length > 0 &&
               shopSlots[slotIndex] &&
               !shopSlots[slotIndex].isClosed &&
               !shopSlots[slotIndex].isFutureDisabled && (
-                <div className="flex flex-col gap-3 mt-6">
-                  {shopSlots[slotIndex].times.map(
-                    (time: string, index: number) => {
-                    const isOccupied = isSlotOccupied(
-                      shopSlots[slotIndex].date,
-                      time,
-                    );
-                    const isPast = isSlotPast(shopSlots[slotIndex].date, time);
-                    const isDisabled = isOccupied || isPast;
-                    const isSelected = slotTime === time;
+                <div className="mt-6 ">
+                  <h3 className="font-bold text-gray-900 text-base sm:text-lg mb-3.5">
+                    Available time slots
+                  </h3>
+                  {shopSlots[slotIndex].times.length === 0 ? (
+                    <div className="text-center py-6 text-gray-400 text-sm">
+                      No time slots available for this day.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-6 lg:grid-cols-8 gap-2 sm:gap-2.5 w-full">
+                      {shopSlots[slotIndex].times.map(
+                        (time: string, index: number) => {
+                          const isConfigured = (
+                            shopSlots[slotIndex].availableTimes || []
+                          ).some(
+                            (t: string) =>
+                              convertTimeToMinutes(t) ===
+                              convertTimeToMinutes(time),
+                          );
+                          const isOccupied = isSlotOccupied(
+                            shopSlots[slotIndex].date,
+                            time,
+                          );
+                          const isPast = isSlotPast(
+                            shopSlots[slotIndex].date,
+                            time,
+                          );
+                          const isDisabled =
+                            !isConfigured || isOccupied || isPast;
+                          const isSelected = slotTime === time;
 
-                    return (
-                      <div
-                        key={index}
-                        onClick={() => !isDisabled && setSlotTime(time)}
-                        className={`w-full rounded-2xl border transition-all duration-200 px-3 sm:px-5 py-3 sm:py-4 flex items-center justify-between gap-2 sm:gap-4 ${
-                          isDisabled
-                            ? "bg-gray-50/80 border-gray-200 opacity-50 cursor-not-allowed"
-                            : isSelected
-                              ? "border-[#1a6cf0] bg-blue-50/20 shadow-xs ring-1 ring-[#1a6cf0] cursor-pointer"
-                              : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/50 cursor-pointer"
-                        }`}
-                      >
-                        {/* Left: Clock icon & Time text */}
-                        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-                          <svg
-                            className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${isSelected ? "text-[#1a6cf0]" : "text-gray-500"}`}
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle cx="12" cy="12" r="10" />
-                            <polyline points="12 6 12 12 16 14" />
-                          </svg>
-                          <span
-                            className={`text-xs sm:text-base md:text-lg font-bold ${isSelected ? "text-[#1a6cf0]" : "text-gray-900"}`}
-                          >
-                            {time}
-                          </span>
-                        </div>
-
-                        {/* Center: You're next badge info */}
-                        <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
-                          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-emerald-600 shrink-0">
-                            <svg
-                              className="w-4 h-4 sm:w-5 sm:h-5"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              viewBox="0 0 24 24"
+                          return (
+                            <button
+                              key={index}
+                              type="button"
+                              disabled={isDisabled}
+                              onClick={() => !isDisabled && setSlotTime(time)}
+                              title={
+                                isDisabled
+                                  ? !isConfigured || isOccupied
+                                    ? "Slot reserved / booked"
+                                    : "Time has passed"
+                                  : undefined
+                              }
+                              className={`w-full py-2.5 sm:py-3 px-1 sm:px-2 rounded-xl sm:rounded-2xl font-bold text-[11px] sm:text-xs md:text-sm tracking-tight whitespace-nowrap transition-all duration-200 flex items-center justify-center text-center ${
+                                isDisabled
+                                  ? "bg-gray-50/80 border border-gray-200 text-gray-400 opacity-40 cursor-not-allowed"
+                                  : isSelected
+                                    ? "bg-[#1a6cf0] border border-[#1a6cf0] text-white shadow-sm shadow-blue-500/25 scale-[1.02] cursor-pointer"
+                                    : "bg-white border border-blue-200 text-[#1a6cf0] hover:border-[#1a6cf0] hover:bg-blue-50/30 cursor-pointer"
+                              }`}
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                              />
-                            </svg>
-                          </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-xs sm:text-sm font-semibold text-emerald-700 leading-snug whitespace-nowrap">
-                              {isDisabled
-                                ? isOccupied
-                                  ? "Booked"
-                                  : "Unavailable"
-                                : "You're next"}
-                            </span>
-                            <span className="text-[10px] sm:text-xs text-gray-500 leading-tight whitespace-nowrap">
-                              {isDisabled
-                                ? isOccupied
-                                  ? "Slot reserved"
-                                  : "Time passed"
-                                : "After current service"}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Right: Radio Indicator */}
-                        <div className="shrink-0">
-                          {isSelected ? (
-                            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#1a6cf0] flex items-center justify-center text-white shadow-xs">
-                              <svg
-                                className="w-3 h-3 sm:w-3.5 sm:h-3.5"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="3"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
-                            </div>
-                          ) : (
-                            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 border-gray-300" />
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                              {time}
+                            </button>
+                          );
+                        },
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -872,7 +880,7 @@ const Booking: React.FC<BookingProps> = ({
                         setGuestPhone("");
                         try {
                           localStorage.removeItem("guest_booking_info");
-                        } catch (e) {
+                        } catch {
                           // Ignore storage error
                         }
                       }}
