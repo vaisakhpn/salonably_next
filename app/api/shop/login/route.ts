@@ -3,23 +3,42 @@ import dbConnect from "@/server/db/mongodb";
 import ShopModel from "@/server/models/Shop";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
+import { rateLimit, getClientIp } from "@/lib/rateLimit";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
 export async function POST(req: Request) {
   try {
+    const clientIp = getClientIp(req);
+    const limiter = rateLimit(`shop_login_${clientIp}`, 10, 60000);
+    if (!limiter.success) {
+      return NextResponse.json(
+        { message: "Too many login attempts. Please wait a moment and try again." },
+        { status: 429 }
+      );
+    }
+
     const { email, password } = await req.json();
 
     if (!email || !password) {
       return NextResponse.json(
-        { message: "Please provide all fields" },
+        { message: "Please provide both email/phone and password" },
         { status: 400 }
       );
     }
 
+    const identifier = String(email).trim();
+    const cleanPhone = identifier.replace(/\D/g, "");
+    const isPhone = cleanPhone.length === 10;
+
     await dbConnect();
 
-    const shop = await ShopModel.findOne({ email });
+    // Support login via either email or 10-digit phone number
+    const shop = await ShopModel.findOne(
+      isPhone
+        ? { phone: cleanPhone }
+        : { email: identifier.toLowerCase() }
+    );
 
     if (!shop) {
       return NextResponse.json(

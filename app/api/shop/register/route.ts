@@ -10,6 +10,7 @@ import {
   normalizePhoneNumber,
 } from "@/server/services/referralService";
 import { assignShopToCohort } from "@/server/services/competitionService";
+import { rateLimit, getClientIp } from "@/lib/rateLimit";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
 
@@ -28,6 +29,15 @@ if (cloudName && apiKey && apiSecret) {
 
 export async function POST(req: Request) {
   try {
+    const clientIp = getClientIp(req);
+    const limiter = rateLimit(`shop_register_${clientIp}`, 5, 60000);
+    if (!limiter.success) {
+      return NextResponse.json(
+        { message: "Too many registration attempts. Please wait a moment and try again." },
+        { status: 429 }
+      );
+    }
+
     const formData = await req.formData();
     const name = (formData.get("name") as string)?.trim();
     const ownerName = (formData.get("ownerName") as string)?.trim();

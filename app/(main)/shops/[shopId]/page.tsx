@@ -7,6 +7,9 @@ import { getUser } from "@/server/middleware/auth";
 
 import { Metadata } from "next";
 
+import mongoose from "mongoose";
+import { notFound } from "next/navigation";
+
 interface PageProps {
   params: Promise<{
     shopId: string;
@@ -17,6 +20,13 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { shopId } = await params;
+  if (!mongoose.isValidObjectId(shopId)) {
+    return {
+      title: "Shop Not Found",
+      description: "The requested shop could not be found.",
+    };
+  }
+
   await dbConnect();
   const shop = await ShopModel.findById(shopId).lean();
 
@@ -40,6 +50,10 @@ export async function generateMetadata({
 
 const Page = async ({ params }: PageProps) => {
   const { shopId } = await params;
+  if (!mongoose.isValidObjectId(shopId)) {
+    notFound();
+  }
+
   await dbConnect();
 
   // Parallel fetch shop data, occupied slots, and user status
@@ -58,7 +72,7 @@ const Page = async ({ params }: PageProps) => {
   ]);
 
   if (!shop) {
-    return <div className="text-center py-10">Shop not found</div>;
+    notFound();
   }
 
   // Format occupied slots

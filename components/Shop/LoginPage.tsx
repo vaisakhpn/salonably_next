@@ -560,15 +560,16 @@ const LoginUser = () => {
                 </div>
 
                 <form onSubmit={handleLoginSubmit} className="space-y-4">
-                  {/* Email Input */}
+                  {/* Email or Phone Input */}
                   <div>
                     <label className="block text-xs font-bold text-gray-800 mb-1">
-                      Email Address
+                      Email Address or Mobile Number
                     </label>
                     <input
-                      type="email"
+                      type="text"
                       required
-                      placeholder="e.g. salon@example.com"
+                      autoComplete="username"
+                      placeholder="e.g. salon@example.com or 9876543210"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
                       className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
