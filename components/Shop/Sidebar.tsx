@@ -106,8 +106,8 @@ const Sidebar = () => {
               href={item.href}
               className={`flex flex-col items-center justify-center transition-all ${
                 isActive
-                  ? "bg-blue-50 text-blue-600 px-5 py-1.5 rounded-2xl"
-                  : "text-blue-700 hover:text-gray-900 py-1"
+                  ? "bg-blue-100 text-blue-600 px-5 py-1.5 rounded-2xl"
+                  : "text-gray-500 hover:text-gray-900 py-1"
               }`}
             >
               {item.svgIcon(isActive)}
