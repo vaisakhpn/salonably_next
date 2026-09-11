@@ -39,6 +39,8 @@ export async function POST(req: Request) {
     const about = formData.get("about") as string;
     const fees = formData.get("fees") as string;
     const address = formData.get("address") as string; // JSON string
+    const coordinates = formData.get("coordinates") as string; // JSON string or null
+    const googleMapsUrl = formData.get("googleMapsUrl") as string;
     const phone = formData.get("phone") as string;
     const imageFile = formData.get("image") as File;
     const availableSlots = formData.get("availableSlots") as string; // JSON string
@@ -97,6 +99,8 @@ export async function POST(req: Request) {
       about,
       fees: Number(fees),
       address: JSON.parse(address), // Expecting JSON string for address
+      coordinates: coordinates ? JSON.parse(coordinates) : undefined,
+      googleMapsUrl: googleMapsUrl ? googleMapsUrl.trim() : "",
       phone,
       date: Date.now(),
       availableSlots: availableSlots ? JSON.parse(availableSlots) : [],
