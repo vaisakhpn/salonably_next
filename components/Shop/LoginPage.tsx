@@ -1,41 +1,102 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import lockmytime from "@/assets/LockMyTime.png";
 import { toast } from "@/lib/toast";
 
+const POPULAR_SERVICES = [
+  { id: "mens_haircut", label: "Men's Haircut", icon: "✂️" },
+  { id: "beard_grooming", label: "Beard & Shave", icon: "🧔" },
+  { id: "womens_styling", label: "Women's Styling", icon: "💇‍♀️" },
+  { id: "hair_color", label: "Hair Coloring", icon: "🎨" },
+  { id: "facial_spa", label: "Facial & Cleanup", icon: "🧖" },
+  { id: "mani_pedi", label: "Mani / Pedi", icon: "💅" },
+  { id: "massage", label: "Head Massage", icon: "💆" },
+  { id: "bridal", label: "Bridal / Groom Makeup", icon: "👰" },
+];
+
+const QUICK_PRICES = ["100", "150", "200", "250", "300", "500"];
+
 const LoginUser = () => {
   const [state, setState] = useState<"Login" | "Register">("Login");
-  
+
+  // Stepper State for Registration (1: Basic Info, 2: Location & Services, 3: Photo & Finish)
+  const [regStep, setRegStep] = useState<1 | 2 | 3>(1);
+
   // Login Form States
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-  
+
   // Register Form States
   const [shopName, setShopName] = useState("");
   const [ownerName, setOwnerName] = useState("");
   const [phone, setPhone] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [regPassword, setRegPassword] = useState("");
-  const [fees, setFees] = useState("");
+  const [fees, setFees] = useState("150");
   const [about, setAbout] = useState("");
   const [addressLine1, setAddressLine1] = useState("");
   const [addressLine2, setAddressLine2] = useState("");
+  const [selectedServices, setSelectedServices] = useState<string[]>([
+    "Men's Haircut",
+    "Beard & Shave",
+  ]);
+  const [customAboutOpen, setCustomAboutOpen] = useState(false);
+
+  // Referral states
   const [referralPhone, setReferralPhone] = useState("");
   const [referrerName, setReferrerName] = useState<string | null>(null);
   const [validatingReferral, setValidatingReferral] = useState(false);
   const [referralError, setReferralError] = useState("");
+
+  // Photo state
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Common UI States
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(true); // Default to visible for easy typing
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  // Toggle service chip & update about description
+  const toggleService = (label: string) => {
+    let updated: string[];
+    if (selectedServices.includes(label)) {
+      updated = selectedServices.filter((s) => s !== label);
+    } else {
+      updated = [...selectedServices, label];
+    }
+    setSelectedServices(updated);
+
+    // Auto-compose simple description if user hasn't customized
+    if (!customAboutOpen || !about.trim()) {
+      if (updated.length > 0) {
+        setAbout(
+          `Services offered: ${updated.join(", ")}. Professional salon grooming & styling care.`,
+        );
+      } else {
+        setAbout(
+          "Professional salon offering haircuts, grooming, and styling services.",
+        );
+      }
+    }
+  };
+
+  // 1-Tap Email Generator for older users without email
+  const handleAutoGenerateEmail = () => {
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (cleanPhone.length >= 10) {
+      setRegEmail(`salon${cleanPhone}@lockmytime.com`);
+      toast.success("Generated email from your phone number!");
+    } else {
+      toast.error("Please enter your 10-digit mobile number first.");
+    }
+  };
 
   // Real-time Referral Phone Validation
   const handleReferralPhoneChange = async (val: string) => {
@@ -67,6 +128,68 @@ const LoginUser = () => {
     }
   };
 
+  // Step 1 Validation -> Move to Step 2
+  const handleNextStep1 = () => {
+    setError("");
+    if (!shopName.trim()) {
+      setError("Please enter your Salon or Shop Name.");
+      toast.error("Please enter your Salon / Shop Name");
+      return;
+    }
+    if (!ownerName.trim()) {
+      setError("Please enter your Name (Owner / Manager).");
+      toast.error("Please enter Owner Name");
+      return;
+    }
+    const cleanPhone = phone.replace(/\D/g, "");
+    if (cleanPhone.length < 10) {
+      setError("Please enter a valid 10-digit WhatsApp / Mobile Number.");
+      toast.error("Please enter a 10-digit Mobile Number");
+      return;
+    }
+    if (!regEmail.trim()) {
+      // Auto-fallback if blank
+      setRegEmail(`salon${cleanPhone}@lockmytime.com`);
+    }
+    if (!regPassword || regPassword.length < 6) {
+      setError("Please create a simple password with at least 6 characters.");
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setRegStep(2);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Step 2 Validation -> Move to Step 3
+  const handleNextStep2 = () => {
+    setError("");
+    if (!addressLine1.trim()) {
+      setError("Please enter your Shop Address or Landmark.");
+      toast.error("Please enter your Shop Address / Landmark");
+      return;
+    }
+    if (!addressLine2.trim()) {
+      setError("Please enter your City or Area.");
+      toast.error("Please enter your City or Area");
+      return;
+    }
+
+    // Auto-fallback for description if empty
+    if (!about.trim()) {
+      const servicesText =
+        selectedServices.length > 0
+          ? selectedServices.join(", ")
+          : "haircuts, grooming, and styling services";
+      setAbout(
+        `Services offered: ${servicesText}. Professional care for our customers.`,
+      );
+    }
+
+    setRegStep(3);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   // Login Submit Handler
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,12 +209,12 @@ const LoginUser = () => {
         throw new Error(data.message || "Invalid credentials");
       }
 
-      // Successful Login
       toast.success(data.message || "Logged in successfully!");
       router.push("/shop-owner");
       router.refresh();
     } catch (err) {
-      const errMsg = err instanceof Error ? err.message : "Something went wrong";
+      const errMsg =
+        err instanceof Error ? err.message : "Something went wrong";
       setError(errMsg);
       toast.error(errMsg);
     } finally {
@@ -99,14 +222,16 @@ const LoginUser = () => {
     }
   };
 
-  // Registration Submit Handler
+  // Registration Submit Handler (Step 3 final submit)
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (!imageFile) {
-      setError("Please upload a photo of your salon/shop to continue.");
-      toast.error("Please upload a photo of your salon/shop.");
+      setError(
+        "Please take or choose a photo of your salon to complete registration.",
+      );
+      toast.error("Photo of your salon is required");
       return;
     }
 
@@ -114,15 +239,19 @@ const LoginUser = () => {
 
     try {
       const formData = new FormData();
-      formData.append("name", shopName);
-      formData.append("ownerName", ownerName);
-      formData.append("phone", phone);
-      formData.append("email", regEmail);
+      formData.append("name", shopName.trim());
+      formData.append("ownerName", ownerName.trim());
+      formData.append("phone", phone.replace(/\D/g, ""));
+      formData.append("email", regEmail.trim().toLowerCase());
       formData.append("password", regPassword);
-      if (fees) formData.append("fees", fees);
-      if (about) formData.append("about", about);
-      if (addressLine1) formData.append("addressLine1", addressLine1);
-      if (addressLine2) formData.append("addressLine2", addressLine2);
+      formData.append("fees", fees || "150");
+      formData.append(
+        "about",
+        about.trim() ||
+          "Professional salon providing quality haircut and grooming services.",
+      );
+      formData.append("addressLine1", addressLine1.trim());
+      formData.append("addressLine2", addressLine2.trim());
       if (referralPhone) formData.append("referralPhone", referralPhone);
       if (imageFile) formData.append("image", imageFile);
 
@@ -137,12 +266,14 @@ const LoginUser = () => {
         throw new Error(data.message || "Registration failed");
       }
 
-      // Successful Registration
-      toast.success(data.message || "Shop registered successfully!");
+      toast.success(
+        data.message || "Shop registered successfully! Welcome aboard.",
+      );
       router.push("/shop-owner");
       router.refresh();
     } catch (err) {
-      const errMsg = err instanceof Error ? err.message : "Registration error occurred";
+      const errMsg =
+        err instanceof Error ? err.message : "Registration error occurred";
       setError(errMsg);
       toast.error(errMsg);
     } finally {
@@ -153,25 +284,26 @@ const LoginUser = () => {
   const handleStateSwitch = (newState: "Login" | "Register") => {
     setState(newState);
     setError("");
+    setRegStep(1);
   };
 
   return (
     <div className="min-h-[85vh] relative flex items-center justify-center p-3 sm:p-6 lg:p-8 bg-slate-50 overflow-hidden">
-      {/* Top Fading Blue Background Backdrop */}
+      {/* Top Background Gradient */}
       <div className="absolute top-0 left-0 right-0 h-full max-h-[55vh] bg-gradient-to-b from-blue-300/80 via-blue-200/70 to-transparent pointer-events-none" />
 
       {/* Main Container Card */}
       <div className="relative z-10 w-full max-w-5xl bg-white rounded-3xl shadow-xl shadow-blue-900/5 border border-gray-100 grid grid-cols-1 lg:grid-cols-12 overflow-hidden my-4">
-        
-        {/* Left Hero Visual Pane - Desktop Viewports (>= lg) */}
+        {/* Left Visual Pane (Desktop >= lg) */}
         <div className="hidden lg:flex lg:col-span-5 relative flex-col justify-between p-10 bg-gradient-to-br from-blue-50/90 via-sky-50/60 to-slate-100 border-r border-gray-100 overflow-hidden">
-          {/* Ambient Light Blue Glows */}
           <div className="absolute -top-20 -left-20 w-64 h-64 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-sky-200/30 rounded-full blur-3xl pointer-events-none" />
 
-          {/* Top Brand Header */}
           <div className="relative z-10">
-            <Link href="/" className="inline-flex items-center gap-3 mb-8 cursor-pointer hover:opacity-90 transition-opacity">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-3 mb-8 cursor-pointer hover:opacity-90 transition-opacity"
+            >
               <Image
                 src={lockmytime}
                 alt="LockMyTime Logo"
@@ -192,87 +324,93 @@ const LoginUser = () => {
               <span className="text-blue-600">Business Effortlessly</span>
             </h1>
             <p className="mt-3 text-sm text-gray-600 leading-relaxed">
-              Partner with LockMyTime to manage appointments, showcase your services, and boost your daily salon bookings.
+              Join thousands of barbers and salon owners. Get direct customer
+              bookings, manage time slots, and increase your daily revenue.
             </p>
           </div>
 
-          {/* Feature Cards */}
+          {/* Simple Benefit Highlights */}
           <div className="relative z-10 my-6 space-y-3.5">
-            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-blue-100/80 shadow-xs transition-transform hover:translate-x-1">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-blue-100/80 shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 text-lg shrink-0">
+                📱
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-gray-900">Instant Booking Control</h4>
-                <p className="text-xs text-gray-500">Manage time slots and customer schedules</p>
+                <h4 className="text-sm font-semibold text-gray-900">
+                  100% Free Registration
+                </h4>
+                <p className="text-xs text-gray-500">
+                  Zero joining fee. Start taking online appointments today.
+                </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-blue-100/80 shadow-xs transition-transform hover:translate-x-1">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-blue-100/80 shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 text-lg shrink-0">
+                📍
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-gray-900">Verified Business Badge</h4>
-                <p className="text-xs text-gray-500">Build trust with premium customers</p>
+                <h4 className="text-sm font-semibold text-gray-900">
+                  Nearby Customers Find You
+                </h4>
+                <p className="text-xs text-gray-500">
+                  Your salon appears on Google Maps & local customer search.
+                </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-blue-100/80 shadow-xs transition-transform hover:translate-x-1">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            <div className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-blue-100/80 shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 text-lg shrink-0">
+                💬
               </div>
               <div>
-                <h4 className="text-sm font-semibold text-gray-900">Zero Commission Setup</h4>
-                <p className="text-xs text-gray-500">Register your shop in under 2 minutes</p>
+                <h4 className="text-sm font-semibold text-gray-900">
+                  Easy WhatsApp Support
+                </h4>
+                <p className="text-xs text-gray-500">
+                  Need help anytime? Our team is a WhatsApp message away.
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Bottom Footer Notice */}
           <div className="relative z-10 pt-4 border-t border-gray-200/80 flex items-center justify-between text-xs text-gray-500">
-            <span>© LockMyTime Business</span>
-            <span className="flex items-center gap-1.5 font-medium text-blue-600">
+            <span>© LockMyTime Partner</span>
+            <span className="flex items-center gap-1.5 font-medium text-emerald-700">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              Partner Network Active
+              Verified Salon Network
             </span>
           </div>
         </div>
 
-        {/* Right Form Section - Mobile & Desktop Responsive Container */}
+        {/* Right Form Section */}
         <div className="lg:col-span-7 flex flex-col justify-center bg-white">
-          
-          {/* Mobile Hero Header Banner (< lg viewports) */}
-          <div className="lg:hidden p-6 pb-5 bg-gradient-to-b from-blue-50/90 via-sky-50/40 to-white border-b border-gray-100 text-center relative overflow-hidden">
-            <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-48 h-48 bg-blue-200/20 rounded-full blur-2xl pointer-events-none" />
-            
+          {/* Mobile Header Banner (< lg) */}
+          <div className="lg:hidden p-5 pb-4 bg-gradient-to-b from-blue-50/90 via-sky-50/40 to-white border-b border-gray-100 text-center relative overflow-hidden">
             <div className="relative z-10 flex flex-col items-center">
-              {/* Logo */}
-              <Link href="/" className="relative mb-2 inline-block cursor-pointer hover:opacity-90 transition-opacity">
+              <Link
+                href="/"
+                className="relative mb-2 inline-block cursor-pointer hover:opacity-90 transition-opacity"
+              >
                 <Image
                   src={lockmytime}
                   alt="LockMyTime Logo"
-                  className="w-14 h-14 rounded-full object-cover shadow-sm border-2 border-white"
+                  className="w-12 h-12 rounded-full object-cover shadow-sm border-2 border-white"
                 />
-                <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full" />
               </Link>
 
-              {/* Title & Tagline */}
-              <Link href="/" className="font-extrabold text-xl text-gray-900 tracking-tight cursor-pointer hover:text-blue-600 transition-colors">
-                Lock<span className="text-blue-600">MyTime</span> <span className="text-sm font-semibold text-blue-600">Business</span>
+              <Link
+                href="/"
+                className="font-extrabold text-lg text-gray-900 tracking-tight"
+              >
+                Lock<span className="text-blue-600">MyTime</span>{" "}
+                <span className="text-xs font-bold text-blue-600 uppercase">
+                  Partner
+                </span>
               </Link>
-              <p className="text-xs text-gray-500 mt-0.5 max-w-xs mx-auto">
-                Salon Partner Login & Registration
-              </p>
 
-              {/* Mobile Centered Segmented Tab Switcher */}
-              <div className="mt-4 w-full max-w-xs bg-slate-100 p-1 rounded-full flex items-center border border-gray-200/80 shadow-inner">
+              {/* Mobile Segmented Tab Switcher */}
+              <div className="mt-3 w-full max-w-xs bg-slate-100 p-1 rounded-full flex items-center border border-gray-200/80 shadow-inner">
                 <button
                   type="button"
                   onClick={() => handleStateSwitch("Login")}
@@ -297,40 +435,26 @@ const LoginUser = () => {
                 </button>
               </div>
 
-              {/* Mobile Quick Feature Pills */}
-              <div className="mt-3.5 flex items-center justify-center gap-2 text-[11px] text-gray-600 font-medium">
-                <span className="inline-flex items-center gap-1 bg-white px-2.5 py-1 rounded-full border border-gray-200/80 shadow-2xs">
-                  🚀 Quick Setup
-                </span>
-                <span className="inline-flex items-center gap-1 bg-white px-2.5 py-1 rounded-full border border-gray-200/80 shadow-2xs">
-                  💼 Shop Dashboard
+              {/* Quick Reassurance Pill */}
+              <div className="mt-2.5">
+                <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 text-[11px] font-semibold px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  100% Free Salon Registration • Under 2 Min
                 </span>
               </div>
             </div>
           </div>
 
           {/* Form Content Area */}
-          <div className="p-6 sm:p-10 lg:p-12 flex flex-col justify-center">
-            
-            {/* Desktop Header Tab Toggle (Hidden on Mobile) */}
-            <div className="hidden lg:flex items-center justify-between mb-8">
-              <Link href="/" className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity">
-                <Image
-                  src={lockmytime}
-                  alt="LockMyTime Logo"
-                  className="w-10 h-10 rounded-full object-cover shadow-xs border border-blue-100"
-                />
-                <div>
-                  <span className="font-extrabold text-xl text-blue-600 tracking-tight block leading-none">
-                    LockMyTime
-                  </span>
-                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                    Business Portal
-                  </span>
-                </div>
-              </Link>
+          <div className="p-5 sm:p-8 lg:p-10 flex flex-col justify-center">
+            {/* Desktop Segmented Tab Switcher */}
+            <div className="hidden lg:flex items-center justify-between mb-6">
+              <div>
+                <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">
+                  Partner Portal
+                </span>
+              </div>
 
-              {/* Desktop Segmented Pill Tab Switcher */}
               <div className="bg-slate-100 p-1 rounded-full flex items-center border border-gray-200/80">
                 <button
                   type="button"
@@ -357,392 +481,668 @@ const LoginUser = () => {
               </div>
             </div>
 
-            {/* Section Title */}
-            <div className="mb-5 sm:mb-6 text-left">
-              <h2 className="text-xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-                {state === "Register" ? "Register Your Salon" : "Shop Owner Login"}
-              </h2>
-              <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                {state === "Register"
-                  ? "Enter your salon details to create your partner account"
-                  : "Access your salon dashboard and appointment bookings"}
-              </p>
-            </div>
-
             {/* Error Alert Message */}
             {error && (
-              <div className="mb-5 p-3.5 sm:p-4 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-3 text-red-600 text-xs sm:text-sm">
-                <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="flex-1 font-medium">{error}</span>
+              <div className="mb-4 p-3.5 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-2.5 text-red-700 text-xs sm:text-sm">
+                <span className="text-base leading-none">⚠️</span>
+                <span className="flex-1 font-semibold">{error}</span>
               </div>
             )}
 
+            {/* ========================================================================= */}
             {/* SHOP LOGIN FORM */}
+            {/* ========================================================================= */}
             {state === "Login" && (
-              <form onSubmit={handleLoginSubmit} className="space-y-4 sm:space-y-5">
-                {/* Email or Phone Input */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
-                    Business Email
-                  </label>
-                  <div className="relative flex items-center">
-                    <div className="absolute left-3.5 text-blue-500 pointer-events-none">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                      </svg>
-                    </div>
+              <div>
+                <div className="mb-6 text-left">
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">
+                    Welcome Back, Salon Partner!
+                  </h2>
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                    Enter your registered email and password to open your salon
+                    dashboard.
+                  </p>
+                </div>
+
+                <form onSubmit={handleLoginSubmit} className="space-y-4">
+                  {/* Email Input */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-800 mb-1">
+                      ✉️ Email Address
+                    </label>
                     <input
                       type="email"
                       required
-                      placeholder="salon@example.com"
+                      placeholder="e.g. salon@example.com"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 focus:bg-white transition-all"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                     />
                   </div>
-                </div>
 
-                {/* Password Input */}
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700">
-                      Password
-                    </label>
-                  </div>
-                  <div className="relative flex items-center">
-                    <div className="absolute left-3.5 text-blue-500 pointer-events-none">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
+                  {/* Password Input */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-bold text-gray-800">
+                        🔒 Password
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-xs text-blue-600 font-semibold hover:underline cursor-pointer"
+                      >
+                        {showPassword ? "Hide password" : "Show password"}
+                      </button>
                     </div>
                     <input
                       type={showPassword ? "text" : "password"}
                       required
-                      placeholder="••••••••"
+                      placeholder="Enter your password"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
-                      className="w-full pl-10 pr-11 py-3 sm:py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 focus:bg-white transition-all"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 p-1 text-gray-400 hover:text-blue-600 focus:outline-none cursor-pointer"
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                    >
-                      {showPassword ? (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.03 10.03 0 012.122-.363c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21M3 3l18 18" />
-                        </svg>
-                      ) : (
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      )}
-                    </button>
                   </div>
-                </div>
 
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3.5 sm:py-3 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-sm sm:text-base shadow-md shadow-blue-500/20 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:pointer-events-none mt-3"
-                >
-                  {loading ? (
-                    <>
-                      <svg className="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      <span>Logging in...</span>
-                    </>
-                  ) : (
-                    <span>Shop Login</span>
-                  )}
-                </button>
-              </form>
+                  {/* Submit Button */}
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-base shadow-md shadow-blue-500/20 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 mt-4"
+                  >
+                    {loading ? (
+                      <>
+                        <svg
+                          className="animate-spin w-5 h-5 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                        <span>Opening Dashboard...</span>
+                      </>
+                    ) : (
+                      <span>Open Shop Dashboard ➔</span>
+                    )}
+                  </button>
+                </form>
+              </div>
             )}
 
-            {/* REGISTER SHOP FORM */}
+            {/* ========================================================================= */}
+            {/* SENIOR-FRIENDLY 3-STEP REGISTER FORM */}
+            {/* ========================================================================= */}
             {state === "Register" && (
-              <form onSubmit={handleRegisterSubmit} className="space-y-4 sm:space-y-4 max-h-[60vh] overflow-y-auto pr-1">
-                {/* Shop Name & Owner Name */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Shop Name *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Royal Cuts & Spa"
-                      value={shopName}
-                      onChange={(e) => setShopName(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 focus:bg-white transition-all"
+              <div>
+                {/* 3-Step Visual Progress Bar */}
+                <div className="mb-5 bg-blue-50/70 border border-blue-100 rounded-2xl p-3.5 sm:p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-extrabold text-blue-700 uppercase tracking-wide flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                      Step {regStep} of 3
+                    </span>
+                    <span className="text-xs font-bold text-gray-700">
+                      {regStep === 1 && "1. Salon & Owner Details"}
+                      {regStep === 2 && "2. Location & Services"}
+                      {regStep === 3 && "3. Salon Photo & Finish"}
+                    </span>
+                  </div>
+
+                  {/* Progress Line */}
+                  <div className="w-full bg-gray-200 h-2.5 rounded-full overflow-hidden flex">
+                    <div
+                      className="bg-blue-600 h-full transition-all duration-300 rounded-full"
+                      style={{ width: `${(regStep / 3) * 100}%` }}
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Owner Name *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Alex Smith"
-                      value={ownerName}
-                      onChange={(e) => setOwnerName(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 focus:bg-white transition-all"
-                    />
+
+                  {/* Step Pills */}
+                  <div className="grid grid-cols-3 gap-1 mt-2 text-center text-[11px] font-semibold text-gray-500">
+                    <span
+                      className={regStep >= 1 ? "text-blue-700 font-bold" : ""}
+                    >
+                      ● 1. Basic Info
+                    </span>
+                    <span
+                      className={regStep >= 2 ? "text-blue-700 font-bold" : ""}
+                    >
+                      ● 2. Location
+                    </span>
+                    <span
+                      className={regStep === 3 ? "text-blue-700 font-bold" : ""}
+                    >
+                      ● 3. Shop Photo
+                    </span>
                   </div>
                 </div>
 
-                {/* Phone & Email */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Phone Number *
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="9876543210"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 focus:bg-white transition-all"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Business Email *
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      placeholder="salon@example.com"
-                      value={regEmail}
-                      onChange={(e) => setRegEmail(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 focus:bg-white transition-all"
-                    />
-                  </div>
-                </div>
+                {/* ------------------------------------------------------------- */}
+                {/* STEP 1: Basic Details (Who are you?) */}
+                {/* ------------------------------------------------------------- */}
+                {regStep === 1 && (
+                  <div className="space-y-4">
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+                        Step 1: Who are you?
+                      </h2>
+                      <p className="text-xs text-gray-500">
+                        Enter your salon name and your mobile number to get
+                        started.
+                      </p>
+                    </div>
 
-                {/* Password & Fee */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Password *
-                    </label>
-                    <div className="relative flex items-center">
+                    {/* Salon Name */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1">
+                        ✂️ Salon / Shop Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Royal Hair Salon & Spa"
+                        value={shopName}
+                        onChange={(e) => setShopName(e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium"
+                      />
+                      <p className="text-[11px] text-gray-500 mt-1">
+                        Write the name shown on your shop board or signboard.
+                      </p>
+                    </div>
+
+                    {/* Owner Name */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1">
+                        👤 Your Full Name (Owner / Manager) *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Ramesh Kumar"
+                        value={ownerName}
+                        onChange={(e) => setOwnerName(e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                      />
+                    </div>
+
+                    {/* Phone Number */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1">
+                        📱 WhatsApp / Mobile Number *
+                      </label>
+                      <div className="relative flex items-center">
+                        <span className="absolute left-3.5 text-sm font-bold text-gray-500 select-none">
+                          +91
+                        </span>
+                        <input
+                          type="tel"
+                          inputMode="numeric"
+                          maxLength={10}
+                          required
+                          placeholder="9876543210"
+                          value={phone}
+                          onChange={(e) =>
+                            setPhone(e.target.value.replace(/\D/g, ""))
+                          }
+                          className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-base font-semibold tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                        />
+                      </div>
+                      <p className="text-[11px] text-gray-500 mt-1">
+                        Customer booking notifications will arrive on this
+                        number.
+                      </p>
+                    </div>
+
+                    {/* Email Address with 1-Tap Generator */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-bold text-gray-800">
+                          ✉️ Email Address *
+                        </label>
+                        {/* <button
+                          type="button"
+                          onClick={handleAutoGenerateEmail}
+                          className="text-[11px] font-bold text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                        >
+                           Don&apos;t have email? Tap to auto-create
+                        </button> */}
+                      </div>
+                      <input
+                        type="email"
+                        required
+                        placeholder="e.g. yourname@gmail.com"
+                        value={regEmail}
+                        onChange={(e) => setRegEmail(e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                      />
+                      <p className="text-[11px] text-gray-500 mt-1">
+                        Used for account recovery. If you don&apos;t have one,
+                        tap the blue button above.
+                      </p>
+                    </div>
+
+                    {/* Password */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-bold text-gray-800">
+                          🔒 Create a Simple Password *
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="text-xs text-blue-600 font-semibold hover:underline cursor-pointer"
+                        >
+                          {showPassword ? "Hide Password" : "Show Password"}
+                        </button>
+                      </div>
                       <input
                         type={showPassword ? "text" : "password"}
                         required
-                        placeholder="••••••••"
+                        placeholder="At least 6 characters (e.g. shop123)"
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
-                        className="w-full px-3.5 py-2.5 pr-10 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 focus:bg-white transition-all"
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 text-gray-400 hover:text-blue-600 focus:outline-none"
-                      >
-                        {showPassword ? "🙈" : "👁️"}
-                      </button>
                     </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Booking Fee (₹)
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="500"
-                      value={fees}
-                      onChange={(e) => setFees(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 focus:bg-white transition-all"
-                    />
-                  </div>
-                </div>
 
-                {/* Address Line 1 & Line 2 */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Address Line 1
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="123 Salon Street"
-                      value={addressLine1}
-                      onChange={(e) => setAddressLine1(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 focus:bg-white transition-all"
-                    />
+                    {/* Step 1 Next Button */}
+                    <button
+                      type="button"
+                      onClick={handleNextStep1}
+                      className="w-full py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-base shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer mt-5"
+                    >
+                      <span>Next: Shop Location & Services ➔</span>
+                    </button>
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Address Line 2 (City / Landmark)
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="City Center, Suite 4"
-                      value={addressLine2}
-                      onChange={(e) => setAddressLine2(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 focus:bg-white transition-all"
-                    />
-                  </div>
-                </div>
+                )}
 
-                {/* About & Image Upload */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1">
-                    About / Description
-                  </label>
-                  <textarea
-                    rows={2}
-                    placeholder="Brief description of your salon services..."
-                    value={about}
-                    onChange={(e) => setAbout(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 text-sm focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 focus:bg-white transition-all resize-none"
-                  />
-                </div>
-
-                {/* Referral Phone Number (Optional) */}
-                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 border border-blue-100/80">
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-bold uppercase tracking-wider text-blue-900 flex items-center gap-1.5">
-                      <span>🎁 Referral Phone Number</span>
-                      <span className="text-[10px] font-normal text-gray-500 normal-case">(Optional)</span>
-                    </label>
-                    {validatingReferral && (
-                      <span className="text-[11px] text-blue-600 font-medium flex items-center gap-1">
-                        <svg className="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                        </svg>
-                        Checking...
-                      </span>
-                    )}
-                  </div>
-                  <div className="relative flex items-center">
-                    <span className="absolute left-3 text-xs font-bold text-gray-400 select-none">
-                      +91
-                    </span>
-                    <input
-                      type="tel"
-                      maxLength={10}
-                      placeholder="9876543210"
-                      value={referralPhone}
-                      onChange={(e) => handleReferralPhoneChange(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 bg-white border border-blue-200/80 rounded-xl text-gray-900 placeholder-gray-400 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-blue-100 focus:border-blue-600 transition-all tracking-wider"
-                    />
-                  </div>
-
-                  {referrerName && (
-                    <div className="mt-1.5 flex items-center gap-1.5 text-xs text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/70">
-                      <svg className="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      <span>Referred by: {referrerName}</span>
+                {/* ------------------------------------------------------------- */}
+                {/* STEP 2: Location & Services (Where & What?) */}
+                {/* ------------------------------------------------------------- */}
+                {regStep === 2 && (
+                  <div className="space-y-4">
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+                        Step 2: Where is your salon?
+                      </h2>
+                      <p className="text-xs text-gray-500">
+                        Help nearby customers find your address easily.
+                      </p>
                     </div>
-                  )}
 
-                  {referralError && (
-                    <p className="mt-1 text-[11px] text-red-600 font-medium">
-                      ⚠️ {referralError}
-                    </p>
-                  )}
+                    {/* Address Line 1 */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1">
+                        📍 Shop Address / Landmark *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Shop No. 4, Near State Bank, Main Road"
+                        value={addressLine1}
+                        onChange={(e) => setAddressLine1(e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                      />
+                      <p className="text-[11px] text-gray-500 mt-1">
+                        Mention any prominent nearby landmark (e.g. Near Bus
+                        Stand, Opposite Temple).
+                      </p>
+                    </div>
 
-                  <p className="text-[10px] text-gray-500 mt-1">
-                    If someone invited you to LockMyTime, enter their mobile number here.
-                  </p>
-                </div>
+                    {/* Address Line 2 */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1">
+                        🏙️ City / Area / Town *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Kochi, Ernakulam"
+                        value={addressLine2}
+                        onChange={(e) => setAddressLine2(e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1 flex items-center justify-between">
-                    <span>Salon / Shop Photo *</span>
-                    <span className="text-[11px] text-blue-600 font-medium lowercase">
-                      {imageFile ? "1 photo selected" : "Required"}
-                    </span>
-                  </label>
+                    {/* Starting Service Price (₹) with 1-Tap Chips */}
+                    <div className="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-3.5">
+                      <label className="block text-xs font-bold text-gray-900 mb-1">
+                        💰 Starting Haircut / Service Price (₹)
+                      </label>
+                      <p className="text-[11px] text-gray-600 mb-2">
+                        The minimum price customers pay for a haircut or
+                        service. You keep 100% of this fee.
+                      </p>
 
-                  {imagePreview ? (
-                    <div className="relative p-2 bg-gray-50 border border-blue-200 rounded-2xl flex items-center gap-3">
-                      <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-gray-200 shrink-0 bg-white">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={imagePreview}
-                          alt="Salon Preview"
-                          className="w-full h-full object-cover"
+                      <div className="flex flex-wrap items-center gap-2 mb-2.5">
+                        {QUICK_PRICES.map((p) => (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => setFees(p)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                              fees === p
+                                ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                                : "bg-white text-gray-700 border-gray-300 hover:bg-amber-50"
+                            }`}
+                          >
+                            ₹{p}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="relative flex items-center">
+                        <span className="absolute left-3.5 text-sm font-bold text-gray-500">
+                          ₹
+                        </span>
+                        <input
+                          type="number"
+                          value={fees}
+                          onChange={(e) => setFees(e.target.value)}
+                          placeholder="150"
+                          className="w-full pl-8 pr-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 text-base font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
                         />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold text-gray-900 truncate">
-                          {imageFile?.name}
-                        </p>
-                        <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">
-                          ✓ Photo ready for upload
-                        </p>
+                    </div>
+
+                    {/* 1-Tap Services Selector */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1">
+                        ✂️ Services You Provide (Tap all that apply)
+                      </label>
+                      <p className="text-[11px] text-gray-500 mb-2">
+                        Tap your services — we will write your shop description
+                        automatically!
+                      </p>
+
+                      <div className="flex flex-wrap gap-2">
+                        {POPULAR_SERVICES.map((srv) => {
+                          const isSelected = selectedServices.includes(
+                            srv.label,
+                          );
+                          return (
+                            <button
+                              key={srv.id}
+                              type="button"
+                              onClick={() => toggleService(srv.label)}
+                              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer active:scale-95 ${
+                                isSelected
+                                  ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                                  : "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+                              }`}
+                            >
+                              <span>{srv.icon}</span>
+                              <span>{srv.label}</span>
+                              {isSelected && (
+                                <span className="text-[10px] ml-0.5">✓</span>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
+
+                      {/* Optional Custom Description Toggle */}
+                      <div className="mt-2 text-right">
+                        <button
+                          type="button"
+                          onClick={() => setCustomAboutOpen(!customAboutOpen)}
+                          className="text-[11px] text-blue-600 font-semibold hover:underline cursor-pointer"
+                        >
+                          {customAboutOpen
+                            ? "Hide custom description"
+                            : "+ Edit custom description"}
+                        </button>
+                      </div>
+
+                      {customAboutOpen && (
+                        <textarea
+                          rows={2}
+                          value={about}
+                          onChange={(e) => setAbout(e.target.value)}
+                          placeholder="Describe your special services or offers..."
+                          className="w-full mt-1.5 px-3.5 py-2 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white resize-none"
+                        />
+                      )}
+                    </div>
+
+                    {/* Step 2 Buttons */}
+                    <div className="grid grid-cols-2 gap-3 pt-2">
                       <button
                         type="button"
                         onClick={() => {
-                          setImageFile(null);
-                          setImagePreview(null);
+                          setRegStep(1);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
                         }}
-                        className="px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
-                        title="Remove Photo"
+                        className="py-3 px-4 rounded-xl border border-gray-300 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-colors cursor-pointer"
                       >
-                        Change
+                        ← Back
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleNextStep2}
+                        className="py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-500/20 transition-all cursor-pointer"
+                      >
+                        Next: Shop Photo ➔
                       </button>
                     </div>
-                  ) : (
-                    <div className="relative">
+                  </div>
+                )}
+
+                {/* ------------------------------------------------------------- */}
+                {/* STEP 3: Salon Photo & Submit (Show your shop!) */}
+                {/* ------------------------------------------------------------- */}
+                {regStep === 3 && (
+                  <form onSubmit={handleRegisterSubmit} className="space-y-4">
+                    <div>
+                      <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+                        Step 3: Show your shop!
+                      </h2>
+                      <p className="text-xs text-gray-500">
+                        Take a clear photo of your salon signboard or inside
+                        chairs.
+                      </p>
+                    </div>
+
+                    {/* Big Camera Photo Card */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-800 mb-1 flex items-center justify-between">
+                        <span>📸 Salon / Shop Photo *</span>
+                        <span className="text-[11px] text-blue-600 font-semibold">
+                          {imageFile ? "✓ 1 Photo Ready" : "Required"}
+                        </span>
+                      </label>
+
+                      {imagePreview ? (
+                        /* Selected Photo Preview Card */
+                        <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-2xl flex items-center gap-3.5">
+                          <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-emerald-300 shrink-0 bg-white shadow-xs">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={imagePreview}
+                              alt="Salon Preview"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold text-gray-900 truncate">
+                              {imageFile?.name || "Salon Photo"}
+                            </p>
+                            <p className="text-xs text-emerald-700 font-semibold mt-0.5 flex items-center gap-1">
+                              <span>✓ Photo looks great!</span>
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="mt-1.5 inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                            >
+                              <span>Take another photo</span>
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        /* Big Clickable Camera Card */
+                        <div
+                          onClick={() => fileInputRef.current?.click()}
+                          className="border-2 border-dashed border-blue-300 hover:border-blue-500 bg-blue-50/40 hover:bg-blue-50/80 p-6 sm:p-8 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-[0.99] group shadow-2xs"
+                        >
+                          <div className="w-16 h-16 rounded-2xl bg-blue-100 group-hover:bg-blue-200 text-blue-600 flex items-center justify-center text-3xl mb-3 shadow-inner transition-colors">
+                            📷
+                          </div>
+                          <p className="text-base font-bold text-gray-900">
+                            Tap here to Take a Photo of Your Shop
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1 max-w-xs">
+                            Opens your phone camera or gallery. Show the front
+                            signboard or inside chairs.
+                          </p>
+                          <span className="mt-3 inline-flex items-center gap-1.5 bg-blue-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-xs">
+                            <span>Open Camera / Gallery</span>
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Hidden File Input */}
                       <input
+                        ref={fileInputRef}
                         type="file"
-                        id="shop-image-input"
                         accept="image/*"
-                        required
+                        capture="environment"
                         onChange={(e) => {
                           const file = e.target.files?.[0] || null;
                           setImageFile(file);
                           if (file) {
                             setImagePreview(URL.createObjectURL(file));
+                            setError("");
                           } else {
                             setImagePreview(null);
                           }
                         }}
-                        className="w-full text-xs text-gray-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer bg-gray-50 border border-dashed border-gray-300 rounded-xl p-2"
+                        className="hidden"
                       />
                     </div>
-                  )}
-                </div>
 
-                {/* Submit Registration Button */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-3.5 sm:py-3 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-sm sm:text-base shadow-md shadow-blue-500/20 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:pointer-events-none mt-3"
-                >
-                  {loading ? (
-                    <>
-                      <svg className="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      <span>Registering Shop...</span>
-                    </>
-                  ) : (
-                    <span>Complete Shop Registration</span>
-                  )}
-                </button>
-              </form>
+                    {/* Optional Referral Phone */}
+                    <div className="p-3.5 rounded-2xl bg-gradient-to-r from-blue-50/60 to-indigo-50/40 border border-blue-100">
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-xs font-bold text-gray-800 flex items-center gap-1">
+                          <span>🎁 Did a friend invite you?</span>
+                          <span className="text-[10px] font-normal text-gray-500">
+                            (Optional)
+                          </span>
+                        </label>
+                        {validatingReferral && (
+                          <span className="text-[11px] text-blue-600 font-medium">
+                            Checking...
+                          </span>
+                        )}
+                      </div>
+                      <div className="relative flex items-center">
+                        <span className="absolute left-3 text-xs font-bold text-gray-400 select-none">
+                          +91
+                        </span>
+                        <input
+                          type="tel"
+                          maxLength={10}
+                          placeholder="Friend's 10-digit mobile number"
+                          value={referralPhone}
+                          onChange={(e) =>
+                            handleReferralPhoneChange(e.target.value)
+                          }
+                          className="w-full pl-10 pr-3 py-2 bg-white border border-blue-200 rounded-xl text-gray-900 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 tracking-wider"
+                        />
+                      </div>
+
+                      {referrerName && (
+                        <p className="mt-1 text-xs text-emerald-700 font-semibold">
+                          ✓ Referred by: {referrerName}
+                        </p>
+                      )}
+                      {referralError && (
+                        <p className="mt-1 text-xs text-red-600 font-medium">
+                          ⚠️ {referralError}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Step 3 Action Buttons */}
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                      <button
+                        type="button"
+                        disabled={loading}
+                        onClick={() => {
+                          setRegStep(2);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                        className="py-3.5 px-4 rounded-xl border border-gray-300 text-gray-700 font-bold text-sm hover:bg-gray-50 transition-colors cursor-pointer"
+                      >
+                        ← Back to Location
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+                      >
+                        {loading ? (
+                          <>
+                            <svg
+                              className="animate-spin w-4 h-4 text-white"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            <span>Creating Shop...</span>
+                          </>
+                        ) : (
+                          <span>🎉 Register & Open Shop</span>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* WhatsApp Support Safety Net Bar */}
+                <div className="mt-5 pt-3 border-t border-gray-100 text-center">
+                  <p className="text-xs text-gray-500">
+                    Need help registering?{" "}
+                    <a
+                      href="https://wa.me/917559092281?text=Hi,%20I%20am%20a%20salon%20owner%20and%20need%20help%20registering%20my%20shop%20on%20LockMyTime"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-emerald-600 font-bold hover:underline inline-flex items-center gap-1"
+                    >
+                      <span>💬 Chat with us on WhatsApp</span>
+                    </a>
+                  </p>
+                </div>
+              </div>
             )}
 
-            {/* State Switcher Link */}
-            <div className="mt-6 pt-5 border-t border-gray-100 text-center">
+            {/* Bottom Switcher: Login <-> Register */}
+            <div className="mt-5 pt-4 border-t border-gray-100 text-center">
               {state === "Login" ? (
                 <p className="text-xs sm:text-sm text-gray-600">
                   New salon partner?{" "}
@@ -751,7 +1151,7 @@ const LoginUser = () => {
                     onClick={() => handleStateSwitch("Register")}
                     className="font-bold text-blue-600 hover:text-blue-700 hover:underline cursor-pointer focus:outline-none ml-1"
                   >
-                    Register your shop now
+                    Register your shop (Free)
                   </button>
                 </p>
               ) : (
@@ -767,10 +1167,8 @@ const LoginUser = () => {
                 </p>
               )}
             </div>
-
           </div>
         </div>
-
       </div>
     </div>
   );
