@@ -391,31 +391,159 @@ const Booking: React.FC<BookingProps> = ({
     <div className="max-w-6xl mx-auto px-4 py-6">
       {!bookingDetails ? (
         <>
-          <div className="flex flex-col sm:flex-row gap-6">
-            <Image
-              src={shopInfo.image || slider_img}
-              alt="shop"
-              width={300}
-              height={300}
-              priority
-              className="rounded-lg object-cover"
-            />
+          {/* Premium Salon Hero Card */}
+          <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-gray-200/90 bg-white shadow-xs hover:shadow-md transition-all">
+            <div className="flex flex-col md:flex-row items-stretch">
+              {/* Left/Top: Salon Image with Badges */}
+              <div className="relative md:w-72 lg:w-80 h-48 sm:h-56 md:h-auto min-h-[190px] shrink-0 overflow-hidden bg-slate-100">
+                <Image
+                  src={shopInfo.image || slider_img}
+                  alt={shopInfo.name || "Salon"}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 320px"
+                  priority
+                  className="object-cover transition-transform duration-500 hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10 md:hidden" />
 
-            <div className="flex-1 border rounded-lg p-6 bg-white">
-              <h1 className="text-2xl font-semibold">{shopInfo.name}</h1>
-              {shopInfo.ownerName && (
-                <p className="text-sm font-medium text-gray-500 mt-1">
-                  Owner: {shopInfo.ownerName}
-                </p>
-              )}
-              <p className="text-sm text-gray-600 mt-1">
-                {shopInfo.address?.line1}, {shopInfo.address?.line2}
-              </p>
-              <p className="text-sm text-gray-600 mt-1">{shopInfo.phone}</p>
-              <p className="text-sm text-gray-500 mt-4">{shopInfo.about}</p>
-              <p className="mt-4 font-medium">
-                Charge: <span className="text-gray-700">₹{shopInfo.fees}</span>
-              </p>
+                {/* Status Overlay Badge on Image */}
+                <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-md text-white text-[11px] font-semibold px-2.5 py-1 rounded-full border border-white/20 shadow-xs">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>Open for Booking</span>
+                </div>
+
+                {/* Mobile Title on Image for compact vertical space */}
+                <div className="absolute bottom-3 left-3 right-3 text-white md:hidden">
+                  <h1 className="text-xl font-extrabold drop-shadow-md">
+                    {shopInfo.name}
+                  </h1>
+                </div>
+              </div>
+
+              {/* Right: Salon Details & Highlights */}
+              <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
+                <div>
+                  {/* Header row with Title and Fee Badge */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="hidden md:block">
+                      <div className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100 mb-1.5">
+                        <svg
+                          className="w-3.5 h-3.5 text-blue-600"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        <span>Verified Salon</span>
+                      </div>
+                      <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+                        {shopInfo.name}
+                      </h1>
+                    </div>
+
+                    {/* Fee / Charge Pill */}
+                    <div className="shrink-0 flex flex-row justify-center items-center gap-1.5  bg-blue-50/80 border border-blue-200/90 rounded-2xl px-3.5 sm:px-4 py-2 text-right">
+                      <span className="text-[10px] sm:text-xs font-semibold uppercase text-blue-600 block tracking-wider">
+                        Booking Fee
+                      </span>
+                      <span className="text-[10px] sm:text-xl font-black text-blue-700 ">
+                        ₹{shopInfo.fees}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Info Grid / Chips */}
+                  <div className="mt-3 flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-gray-600">
+                    {/* Location with Icon */}
+                    {(shopInfo.address?.line1 || shopInfo.address?.line2) && (
+                      <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100">
+                        <svg
+                          className="w-4 h-4 text-blue-600 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
+                        <span className="font-medium text-gray-700 capitalize">
+                          {[shopInfo.address?.line1, shopInfo.address?.line2]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Phone with Icon */}
+                    {shopInfo.phone && (
+                      <a
+                        href={`tel:${shopInfo.phone}`}
+                        className="flex items-center gap-1.5 bg-gray-50 hover:bg-blue-50/60 hover:text-blue-700 px-3 py-1.5 rounded-xl border border-gray-100 transition-colors"
+                      >
+                        <svg
+                          className="w-4 h-4 text-emerald-600 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                          />
+                        </svg>
+                        <span className="font-medium text-gray-700">
+                          {shopInfo.phone}
+                        </span>
+                      </a>
+                    )}
+
+                    {/* Owner chip */}
+                    {shopInfo.ownerName && (
+                      <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100">
+                        <svg
+                          className="w-4 h-4 text-indigo-500 shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                        <span className="text-gray-500">Owner:</span>
+                        <span className="font-semibold text-gray-800">
+                          {shopInfo.ownerName}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* About / Tagline */}
+                  {shopInfo.about && (
+                    <p className="mt-3 text-xs sm:text-sm text-gray-500 leading-relaxed line-clamp-2 italic">
+                      &ldquo;{shopInfo.about}&rdquo;
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
