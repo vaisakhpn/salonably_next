@@ -1188,21 +1188,34 @@ const Booking: React.FC<BookingProps> = ({
             </div>
 
             {/* "You're next in line" Live Queue Card */}
-            <div className="bg-[#f0fdf4] border border-emerald-200/90 rounded-2xl sm:rounded-3xl p-4 sm:p-5 mt-4">
+            <div className="relative overflow-hidden bg-gradient-to-b from-[#f0fdf4] to-[#e8fbf0] border-2 border-emerald-300/80 rounded-2xl sm:rounded-3xl p-4 sm:p-5 mt-4 shadow-md shadow-emerald-500/10 ring-4 ring-emerald-50 transition-all">
+              {/* Top Badge: Live Pulse Indicator */}
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <div className="inline-flex items-center gap-2 bg-red-100/90 border border-emerald-300 text-emerald-800 px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                  </span>
+                  <span>Please Note</span>
+                </div>
+
+             
+              </div>
+
               {/* Top info & queue illustration */}
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h4 className="font-bold text-emerald-800 text-sm sm:text-base">
-                    You&apos;re next in line
+                  <h4 className="font-extrabold text-emerald-900 text-base sm:text-lg flex items-center gap-1.5">
+                    You&apos;re next in line! 🎉
                   </h4>
-                  <p className="text-gray-600 text-xs mt-0.5 max-w-[200px] sm:max-w-xs leading-tight">
+                  <p className="text-gray-600 text-xs sm:text-sm mt-0.5 max-w-[220px] sm:max-w-xs leading-relaxed">
                     After the current service is completed, we&apos;ll take care
-                    of you.
+                    of you right away.
                   </p>
                 </div>
 
                 {/* Star Chairs Graphic */}
-                <div className="shrink-0">
+                <div className="shrink-0 bg-white/70 p-1.5 rounded-xl border border-emerald-100 shadow-xs">
                   <svg
                     width="110"
                     height="42"
@@ -1356,13 +1369,14 @@ const Booking: React.FC<BookingProps> = ({
                 </div>
               </div>
 
-              <div className="border-t border-emerald-200/60 my-3.5" />
+              <div className="border-t border-emerald-200/80 my-3.5" />
 
               {/* Live Queue Visual: Customer Ahead -> You */}
-              <div className="flex items-center justify-between px-2 sm:px-6">
+              <div className="flex items-center justify-between px-2 sm:px-6 bg-white/70 py-3 rounded-2xl border border-emerald-100">
                 {/* Left: Customer Ahead */}
                 <div className="flex flex-col items-center text-center">
-                  <span className="text-[11px] font-medium text-gray-500 mb-1.5">
+                  <span className="text-[11px] font-semibold text-gray-500 mb-1.5 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                     Currently serving
                   </span>
                   <div className="relative">
@@ -1375,10 +1389,10 @@ const Booking: React.FC<BookingProps> = ({
                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                       </svg>
                     </div>
-                    {/* Scissors icon badge */}
-                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white border border-gray-200 shadow-xs flex items-center justify-center text-slate-700">
+                    {/* Scissors icon badge with bounce */}
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-amber-100 border border-amber-300 shadow-xs flex items-center justify-center text-amber-700 animate-bounce">
                       <svg
-                        className="w-3 h-3 text-slate-600"
+                        className="w-3 h-3 text-amber-700"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2.5"
@@ -1394,45 +1408,58 @@ const Booking: React.FC<BookingProps> = ({
                     Customer ahead
                   </span>
                   <span className="text-[10px] text-gray-500">
-                    Haircut in progress
+                    Service in progress
                   </span>
                 </div>
 
-                {/* Connecting arrow */}
-                <div className="flex items-center justify-center flex-1 px-2">
+                {/* Connecting Animated Arrow */}
+                <div className="flex items-center justify-center flex-1 px-3">
                   <div className="w-full flex items-center justify-center relative">
-                    <div className="w-full border-t-2 border-dashed border-emerald-300" />
-                    <svg
-                      className="w-4 h-4 text-emerald-600 shrink-0 absolute right-0"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
-                    </svg>
+                    <div className="w-full border-t-2 border-dashed border-emerald-400 animate-pulse" />
+                    <div className="absolute right-0 w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs">
+                      <svg
+                        className="w-3.5 h-3.5 animate-pulse"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="3"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
                   </div>
                 </div>
 
-                {/* Right: You */}
+                {/* Right: You (Animated Active Focus) */}
                 <div className="flex flex-col items-center text-center">
-                  <span className="text-[11px] font-bold text-emerald-600 mb-1.5">
-                    You
+                  <span className="text-[11px] font-extrabold text-emerald-700 mb-1.5 flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    YOU
                   </span>
                   <div className="relative">
-                    <div className="w-13 h-13 rounded-full bg-emerald-50 border-2 border-emerald-500 flex items-center justify-center overflow-hidden ring-4 ring-emerald-100">
+                    <div className="w-13 h-13 rounded-full bg-emerald-100 border-2 border-emerald-500 flex items-center justify-center overflow-hidden ring-4 ring-emerald-300/70 shadow-md shadow-emerald-500/20 scale-105 transition-transform">
                       <svg
-                        className="w-9 h-9 text-emerald-600"
+                        className="w-9 h-9 text-emerald-700"
                         viewBox="0 0 24 24"
                         fill="currentColor"
                       >
                         <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                       </svg>
                     </div>
+                    {/* Next badge */}
+                    <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-600 border border-white shadow-xs flex items-center justify-center text-white text-[10px] font-black">
+                      #1
+                    </div>
                   </div>
-                  <span className="font-bold text-xs text-emerald-700 mt-2">
-                    You&apos;re next
+                  <span className="font-extrabold text-xs text-emerald-800 mt-2">
+                    Next in Line
                   </span>
-                  <span className="text-[10px] text-gray-500">
-                    We&apos;ll take you next
+                  <span className="text-[10px] font-medium text-emerald-600">
+                    Your turn is next
                   </span>
                 </div>
               </div>
