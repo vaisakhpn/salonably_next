@@ -509,7 +509,7 @@ const LoginUser = () => {
                   {/* Email Input */}
                   <div>
                     <label className="block text-xs font-bold text-gray-800 mb-1">
-                      ✉️ Email Address
+                      Email Address
                     </label>
                     <input
                       type="email"
@@ -525,7 +525,7 @@ const LoginUser = () => {
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <label className="block text-xs font-bold text-gray-800">
-                        🔒 Password
+                         Password
                       </label>
                       <button
                         type="button"
@@ -647,7 +647,7 @@ const LoginUser = () => {
                     {/* Salon Name */}
                     <div>
                       <label className="block text-xs font-bold text-gray-800 mb-1">
-                        ✂️ Salon / Shop Name *
+                        Salon / Shop Name *
                       </label>
                       <input
                         type="text"
@@ -657,15 +657,12 @@ const LoginUser = () => {
                         onChange={(e) => setShopName(e.target.value)}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all font-medium"
                       />
-                      <p className="text-[11px] text-gray-500 mt-1">
-                        Write the name shown on your shop board or signboard.
-                      </p>
                     </div>
 
                     {/* Owner Name */}
                     <div>
                       <label className="block text-xs font-bold text-gray-800 mb-1">
-                        👤 Your Full Name (Owner / Manager) *
+                        Your Full Name (Owner / Manager) *
                       </label>
                       <input
                         type="text"
@@ -680,7 +677,7 @@ const LoginUser = () => {
                     {/* Phone Number */}
                     <div>
                       <label className="block text-xs font-bold text-gray-800 mb-1">
-                        📱 WhatsApp / Mobile Number *
+                         WhatsApp / Mobile Number *
                       </label>
                       <div className="relative flex items-center">
                         <span className="absolute left-3.5 text-sm font-bold text-gray-500 select-none">
@@ -699,17 +696,13 @@ const LoginUser = () => {
                           className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-base font-semibold tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                         />
                       </div>
-                      <p className="text-[11px] text-gray-500 mt-1">
-                        Customer booking notifications will arrive on this
-                        number.
-                      </p>
                     </div>
 
                     {/* Email Address with 1-Tap Generator */}
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <label className="block text-xs font-bold text-gray-800">
-                          ✉️ Email Address *
+                          Email Address *
                         </label>
                         {/* <button
                           type="button"
@@ -727,17 +720,14 @@ const LoginUser = () => {
                         onChange={(e) => setRegEmail(e.target.value)}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                       />
-                      <p className="text-[11px] text-gray-500 mt-1">
-                        Used for account recovery. If you don&apos;t have one,
-                        tap the blue button above.
-                      </p>
+                     
                     </div>
 
                     {/* Password */}
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <label className="block text-xs font-bold text-gray-800">
-                          🔒 Create a Simple Password *
+                         Create a Simple Password *
                         </label>
                         <button
                           type="button"
@@ -785,7 +775,7 @@ const LoginUser = () => {
                     {/* Address Line 1 */}
                     <div>
                       <label className="block text-xs font-bold text-gray-800 mb-1">
-                        📍 Shop Address / Landmark *
+                       Shop Address / Landmark *
                       </label>
                       <input
                         type="text"
@@ -819,7 +809,7 @@ const LoginUser = () => {
                     {/* Starting Service Price (₹) with 1-Tap Chips */}
                     <div className="bg-amber-50/60 border border-amber-200/80 rounded-2xl p-3.5">
                       <label className="block text-xs font-bold text-gray-900 mb-1">
-                        💰 Starting Haircut / Service Price (₹)
+                         Starting Haircut / Service Price (₹)
                       </label>
                       <p className="text-[11px] text-gray-600 mb-2">
                         The minimum price customers pay for a haircut or
@@ -860,7 +850,7 @@ const LoginUser = () => {
                     {/* 1-Tap Services Selector */}
                     <div>
                       <label className="block text-xs font-bold text-gray-800 mb-1">
-                        ✂️ Services You Provide (Tap all that apply)
+                       Services You Provide (Tap all that apply)
                       </label>
                       <p className="text-[11px] text-gray-500 mb-2">
                         Tap your services — we will write your shop description
@@ -958,7 +948,7 @@ const LoginUser = () => {
                     {/* Big Camera Photo Card */}
                     <div>
                       <label className="block text-xs font-bold text-gray-800 mb-1 flex items-center justify-between">
-                        <span>📸 Salon / Shop Photo *</span>
+                        <span>Salon / Shop Photo *</span>
                         <span className="text-[11px] text-blue-600 font-semibold">
                           {imageFile ? "✓ 1 Photo Ready" : "Required"}
                         </span>
@@ -1140,7 +1130,7 @@ const LoginUser = () => {
                       <button
                         type="submit"
                         disabled={loading}
-                        className="py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+                        className="py-3.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-sm shadow-md shadow-blue-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
                       >
                         {loading ? (
                           <>
