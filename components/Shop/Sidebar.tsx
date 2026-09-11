@@ -15,7 +15,7 @@ const Sidebar = () => {
       imgIcon: assets.home_icon,
       svgIcon: (isActive: boolean) => (
         <svg
-          className={`w-6 h-6 ${isActive ? "text-blue-600" : "text-gray-500"}`}
+          className={`w-6 h-6 ${isActive ? "text-blue-600" : "text-blue-500"}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -35,7 +35,7 @@ const Sidebar = () => {
       imgIcon: assets.appointment_icon,
       svgIcon: (isActive: boolean) => (
         <svg
-          className={`w-6 h-6 ${isActive ? "text-blue-600" : "text-gray-500"}`}
+          className={`w-6 h-6 ${isActive ? "text-blue-600" : "text-blue-500"}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -55,7 +55,7 @@ const Sidebar = () => {
       imgIcon: assets.info_icon,
       svgIcon: (isActive: boolean) => (
         <svg
-          className={`w-6 h-6 ${isActive ? "text-blue-600" : "text-gray-500"}`}
+          className={`w-6 h-6 ${isActive ? "text-blue-600" : "text-blue-500"}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -107,7 +107,7 @@ const Sidebar = () => {
               className={`flex flex-col items-center justify-center transition-all ${
                 isActive
                   ? "bg-blue-50 text-blue-600 px-5 py-1.5 rounded-2xl"
-                  : "text-gray-500 hover:text-gray-900 py-1"
+                  : "text-blue-700 hover:text-gray-900 py-1"
               }`}
             >
               {item.svgIcon(isActive)}
@@ -115,7 +115,7 @@ const Sidebar = () => {
                 className={`text-[11px] mt-0.5 ${
                   isActive
                     ? "font-semibold text-blue-600"
-                    : "font-normal text-gray-500"
+                    : "font-normal text-blue-500"
                 }`}
               >
                 {item.name}
