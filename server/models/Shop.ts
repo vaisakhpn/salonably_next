@@ -31,6 +31,11 @@ const shopSchema = new mongoose.Schema(
     slots_booked: { type: Object, default: {} },
     availableSlots: { type: [String], default: [] },
     closedDays: { type: [String], default: [] },
+    coordinates: {
+      lat: { type: Number },
+      lng: { type: Number },
+    },
+    googleMapsUrl: { type: String, trim: true, default: "" },
   },
   { minimize: false },
 );

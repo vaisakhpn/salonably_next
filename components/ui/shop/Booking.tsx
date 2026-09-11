@@ -7,6 +7,7 @@ import { numberInputOnWheelPreventChange } from "@/lib/utils";
 import { toast } from "@/lib/toast";
 
 import slider_img from "@/assets/hero.png"; // Fallback image
+import { generateGoogleMapsDirectionsUrl } from "@/lib/location";
 
 interface BookingProps {
   shopData: any;
@@ -61,6 +62,7 @@ const Booking: React.FC<BookingProps> = ({
   isUserLoggedIn,
 }) => {
   const shopInfo = shopData;
+  const directionsUrl = generateGoogleMapsDirectionsUrl(shopInfo);
 
   const [shopSlots, setShopSlots] = useState<Slot[]>([]);
   const [slotIndex, setSlotIndex] = useState(0);
@@ -486,6 +488,34 @@ const Booking: React.FC<BookingProps> = ({
                         </span>
                       </div>
                     )}
+
+                    {/* Get Directions Action Button */}
+                    <a
+                      href={directionsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white px-3.5 py-2 rounded-xl border border-blue-200/90 font-semibold text-xs sm:text-sm min-h-[36px] transition-all duration-200 shadow-2xs hover:shadow-xs active:scale-95 group cursor-pointer"
+                      title="Open Google Maps for directions to salon"
+                      aria-label={`Get directions to ${shopInfo.name || "salon"} on Google Maps`}
+                    >
+                      <svg
+                        className="w-3.5 h-3.5 text-blue-600 group-hover:text-white transition-colors shrink-0"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" />
+                      </svg>
+                      <span>Get Directions</span>
+                      <svg
+                        className="w-3 h-3 text-blue-400 group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </a>
 
                     {/* Phone with Icon */}
                     {shopInfo.phone && (
@@ -1259,12 +1289,22 @@ const Booking: React.FC<BookingProps> = ({
                     </svg>
                     <span>Salon</span>
                   </div>
-                  <span className="font-semibold text-gray-900 text-right truncate">
-                    {shopInfo.name}
-                    {shopInfo.address?.line2
-                      ? `, ${shopInfo.address.line2}`
-                      : ""}
-                  </span>
+                  <div className="text-right">
+                    <span className="font-semibold text-gray-900 block truncate">
+                      {shopInfo.name}
+                      {shopInfo.address?.line2
+                        ? `, ${shopInfo.address.line2}`
+                        : ""}
+                    </span>
+                    <a
+                      href={directionsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors"
+                    >
+                      <span>Get Directions ↗</span>
+                    </a>
+                  </div>
                 </div>
 
                 <div className="border-t border-gray-100" />

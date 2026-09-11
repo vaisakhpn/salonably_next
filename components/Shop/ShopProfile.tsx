@@ -7,6 +7,13 @@ import { currency, numberInputOnWheelPreventChange } from "@/lib/utils";
 import TimeSlotSelector from "../Admin/TimeSlotSelector";
 import ClosedDaysSelector from "./ClosedDaysSelector";
 import Image from "next/image";
+import {
+  extractCoordinatesFromMapUrl,
+  buildGoogleMapsSearchUrl,
+  generateGoogleMapsDirectionsUrl,
+  formatCoordinates,
+  isValidCoordinates,
+} from "@/lib/location";
 
 // --- Types ---
 
@@ -24,6 +31,11 @@ interface ShopData {
   phone: string;
   fees: number;
   address: Address;
+  coordinates?: {
+    lat?: number;
+    lng?: number;
+  };
+  googleMapsUrl?: string;
   available: boolean;
   availableSlots: string[];
   closedDays?: string[];
@@ -54,6 +66,8 @@ const useShopProfile = (initialData: ShopData) => {
       line1: initialData?.address?.line1 || "Main Street",
       line2: initialData?.address?.line2 || "City Center",
     },
+    coordinates: initialData?.coordinates,
+    googleMapsUrl: initialData?.googleMapsUrl || "",
     available: typeof initialData?.available === "boolean" ? initialData.available : true,
     availableSlots:
       Array.isArray(initialData?.availableSlots) && initialData.availableSlots.length > 0
@@ -105,6 +119,62 @@ const useShopProfile = (initialData: ShopData) => {
     }));
   };
 
+  const [geoLoading, setGeoLoading] = useState(false);
+
+  const detectCurrentLocation = () => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = Number(pos.coords.latitude.toFixed(6));
+        const lng = Number(pos.coords.longitude.toFixed(6));
+        setProfileData((prev) => ({
+          ...prev,
+          coordinates: { lat, lng },
+        }));
+        setGeoLoading(false);
+        toast.success(`Location captured: ${lat}, ${lng}`);
+      },
+      (err) => {
+        setGeoLoading(false);
+        console.error("GPS error:", err);
+        if (err.code === err.PERMISSION_DENIED) {
+          toast.error("Location permission denied. Please allow location in your browser settings.");
+        } else {
+          toast.error(err.message || "Failed to retrieve current location");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  const handleGoogleMapsUrlChange = (url: string) => {
+    const trimmed = url.trim();
+    const extracted = extractCoordinatesFromMapUrl(trimmed);
+    setProfileData((prev) => ({
+      ...prev,
+      googleMapsUrl: url,
+      coordinates: extracted ? extracted : prev.coordinates,
+    }));
+    if (extracted) {
+      toast.success("Coordinates detected from Google Maps link!");
+    }
+  };
+
+  const handleCoordinatesChange = (field: "lat" | "lng", val: string) => {
+    const num = val === "" ? undefined : parseFloat(val);
+    setProfileData((prev) => ({
+      ...prev,
+      coordinates: {
+        ...prev.coordinates,
+        [field]: num,
+      },
+    }));
+  };
+
   const updateProfile = async () => {
     setLoading(true);
     try {
@@ -113,6 +183,8 @@ const useShopProfile = (initialData: ShopData) => {
         phone: profileData.phone,
         fees: profileData.fees,
         address: profileData.address,
+        coordinates: profileData.coordinates,
+        googleMapsUrl: profileData.googleMapsUrl,
         available: profileData.available,
         availableSlots: profileData.availableSlots,
         closedDays: profileData.closedDays || [],
@@ -223,6 +295,10 @@ const useShopProfile = (initialData: ShopData) => {
     handleAddressChange,
     updateProfile,
     toggleAvailability,
+    geoLoading,
+    detectCurrentLocation,
+    handleGoogleMapsUrlChange,
+    handleCoordinatesChange,
     imgSrc,
     setImgSrc,
   };
@@ -245,6 +321,10 @@ const ShopProfile = ({ shopData }: ShopProfileProps) => {
     handleAddressChange,
     updateProfile,
     toggleAvailability,
+    geoLoading,
+    detectCurrentLocation,
+    handleGoogleMapsUrlChange,
+    handleCoordinatesChange,
     imgSrc,
     setImgSrc,
   } = useShopProfile(shopData);
@@ -572,6 +652,177 @@ const ShopProfile = ({ shopData }: ShopProfileProps) => {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Google Maps & Precise Location */}
+              <div className="pt-2 border-t border-gray-100">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <label className="block text-sm font-semibold text-gray-800">
+                    Google Maps & Precise Location
+                  </label>
+                  {isValidCoordinates(profileData.coordinates) && (
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      GPS Pinned ({formatCoordinates(profileData.coordinates)})
+                    </span>
+                  )}
+                </div>
+
+                {isEdit ? (
+                  <div className="bg-blue-50/40 border border-blue-100/80 rounded-xl p-4 space-y-4">
+                    <p className="text-xs text-gray-600">
+                      Choose how customers will navigate to your salon door using Google Maps.
+                    </p>
+
+                    {/* Option 1: Current GPS Location Button */}
+                    <div>
+                      <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider block mb-1.5">
+                        Option 1: Capture from your device (Recommended)
+                      </span>
+                      <button
+                        type="button"
+                        onClick={detectCurrentLocation}
+                        disabled={geoLoading}
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium text-sm px-4 py-2.5 rounded-xl shadow-xs transition-colors cursor-pointer"
+                      >
+                        {geoLoading ? (
+                          <>
+                            <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                            </svg>
+                            <span>Detecting GPS Location...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <span>📍 Use My Salon&apos;s Current GPS Location</span>
+                          </>
+                        )}
+                      </button>
+                      <p className="text-[11px] text-gray-500 mt-1">
+                        Best used when you are currently present at your salon.
+                      </p>
+                    </div>
+
+                    <div className="relative flex py-1 items-center">
+                      <div className="flex-grow border-t border-gray-200"></div>
+                      <span className="flex-shrink mx-2 text-gray-400 text-xs uppercase font-medium">Or</span>
+                      <div className="flex-grow border-t border-gray-200"></div>
+                    </div>
+
+                    {/* Option 2: Paste Google Maps Link or Search */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          Option 2: Google Maps Link / Share URL
+                        </span>
+                        <a
+                          href={buildGoogleMapsSearchUrl(profileData.name, profileData.address)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-medium text-blue-600 hover:text-blue-800 inline-flex items-center gap-1 transition-colors"
+                        >
+                          Find Salon on Google Maps ↗
+                        </a>
+                      </div>
+                      <input
+                        type="url"
+                        placeholder="Paste link (e.g. https://maps.app.goo.gl/... or google.com/maps/place/...)"
+                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm transition-all"
+                        value={profileData.googleMapsUrl || ""}
+                        onChange={(e) => handleGoogleMapsUrlChange(e.target.value)}
+                      />
+                    </div>
+
+                    {/* Fine-Tuning Coordinates (Optional) */}
+                    <div className="pt-2 border-t border-blue-100">
+                      <span className="text-xs font-semibold text-gray-700 block mb-2">
+                        Exact Coordinates (Optional fine-tuning)
+                      </span>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] text-gray-500 mb-1">Latitude</label>
+                          <input
+                            type="number"
+                            step="any"
+                            placeholder="e.g. 9.9816"
+                            className="w-full px-3 py-1.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-xs"
+                            value={profileData.coordinates?.lat ?? ""}
+                            onChange={(e) => handleCoordinatesChange("lat", e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] text-gray-500 mb-1">Longitude</label>
+                          <input
+                            type="number"
+                            step="any"
+                            placeholder="e.g. 76.2999"
+                            className="w-full px-3 py-1.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none text-xs"
+                            value={profileData.coordinates?.lng ?? ""}
+                            onChange={(e) => handleCoordinatesChange("lng", e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Preview Button */}
+                    {(isValidCoordinates(profileData.coordinates) || profileData.googleMapsUrl) && (
+                      <div className="pt-2">
+                        <a
+                          href={generateGoogleMapsDirectionsUrl(profileData)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 hover:text-blue-900 bg-white hover:bg-blue-50 px-3 py-2 rounded-lg border border-blue-200 transition-colors shadow-2xs"
+                        >
+                          <span>🗺️ Test Directions on Google Maps ↗</span>
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-lg p-4 text-gray-700 space-y-2">
+                    {isValidCoordinates(profileData.coordinates) ? (
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <p className="text-xs font-medium text-gray-500">Coordinates</p>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {formatCoordinates(profileData.coordinates)}
+                          </p>
+                        </div>
+                        <a
+                          href={generateGoogleMapsDirectionsUrl(profileData)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-2xs transition-colors"
+                        >
+                          Open in Google Maps ↗
+                        </a>
+                      </div>
+                    ) : profileData.googleMapsUrl ? (
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs text-gray-600 truncate max-w-xs">
+                          {profileData.googleMapsUrl}
+                        </p>
+                        <a
+                          href={profileData.googleMapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-2xs transition-colors"
+                        >
+                          Open in Google Maps ↗
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between text-xs text-amber-700 bg-amber-50 p-2.5 rounded-md border border-amber-200">
+                        <span>⚠️ Exact Google Maps location not pinned yet. Click &quot;Edit Profile&quot; to capture GPS.</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
