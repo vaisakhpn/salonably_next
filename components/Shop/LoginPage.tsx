@@ -6,6 +6,13 @@ import Image from "next/image";
 import Link from "next/link";
 import lockmytime from "@/assets/LockMyTime.png";
 import { toast } from "@/lib/toast";
+import {
+  extractCoordinatesFromMapUrl,
+  buildGoogleMapsSearchUrl,
+  generateGoogleMapsDirectionsUrl,
+  formatCoordinates,
+  isValidCoordinates,
+} from "@/lib/location";
 
 const POPULAR_SERVICES = [
   { id: "mens_haircut", label: "Men's Haircut", icon: "✂️" },
@@ -45,6 +52,47 @@ const LoginUser = () => {
     "Beard & Shave",
   ]);
   const [customAboutOpen, setCustomAboutOpen] = useState(false);
+
+  // Location states
+  const [coordinates, setCoordinates] = useState<{ lat?: number; lng?: number } | null>(null);
+  const [googleMapsUrl, setGoogleMapsUrl] = useState<string>("");
+  const [geoLoading, setGeoLoading] = useState<boolean>(false);
+
+  const detectCurrentLocation = () => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      toast.error("Geolocation is not supported by your browser");
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = Number(pos.coords.latitude.toFixed(6));
+        const lng = Number(pos.coords.longitude.toFixed(6));
+        setCoordinates({ lat, lng });
+        setGeoLoading(false);
+        toast.success(`Location captured: ${lat}, ${lng}`);
+      },
+      (err) => {
+        setGeoLoading(false);
+        console.error("GPS error:", err);
+        if (err.code === err.PERMISSION_DENIED) {
+          toast.error("Location permission denied. Please allow location in your browser settings.");
+        } else {
+          toast.error(err.message || "Failed to retrieve current location");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
+
+  const handleGoogleMapsUrlChange = (url: string) => {
+    setGoogleMapsUrl(url);
+    const extracted = extractCoordinatesFromMapUrl(url.trim());
+    if (extracted) {
+      setCoordinates(extracted);
+      toast.success("Coordinates detected from Google Maps link!");
+    }
+  };
 
   // Referral states
   const [referralPhone, setReferralPhone] = useState("");
@@ -253,6 +301,12 @@ const LoginUser = () => {
       );
       formData.append("addressLine1", addressLine1.trim());
       formData.append("addressLine2", addressLine2.trim());
+      if (coordinates && isValidCoordinates(coordinates)) {
+        formData.append("coordinates", JSON.stringify(coordinates));
+      }
+      if (googleMapsUrl.trim()) {
+        formData.append("googleMapsUrl", googleMapsUrl.trim());
+      }
       if (referralPhone) formData.append("referralPhone", referralPhone);
       if (imageFile) formData.append("image", imageFile);
 
@@ -804,6 +858,108 @@ const LoginUser = () => {
                         onChange={(e) => setAddressLine2(e.target.value)}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
                       />
+                    </div>
+
+                    {/* Google Maps Location Box */}
+                    <div className="bg-blue-50/60 border border-blue-200/80 rounded-2xl p-4 space-y-3.5">
+                      <div className="flex flex-wrap items-center justify-between gap-1.5">
+                        <label className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                          <span>📍 Google Maps & Exact Shop Location</span>
+                          <span className="text-[10px] font-semibold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded-full">
+                            Optional but Recommended
+                          </span>
+                        </label>
+                        {isValidCoordinates(coordinates) && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            GPS: {formatCoordinates(coordinates)}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-gray-600">
+                        Adding your exact location lets nearby customers get instant walking or driving directions right to your shop.
+                      </p>
+
+                      {/* Option 1: Use Current Location (If at salon right now) */}
+                      <div>
+                        <button
+                          type="button"
+                          onClick={detectCurrentLocation}
+                          disabled={geoLoading}
+                          className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:bg-gray-300 text-white font-bold text-xs sm:text-sm px-4 py-3 rounded-xl shadow-xs transition-all cursor-pointer"
+                        >
+                          {geoLoading ? (
+                            <>
+                              <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                              </svg>
+                              <span>Detecting GPS Location...</span>
+                            </>
+                          ) : (
+                            <>
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                              <span>📍 Use My Current Location (If sitting at shop)</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Divider */}
+                      <div className="relative flex py-0.5 items-center">
+                        <div className="flex-grow border-t border-blue-200/60"></div>
+                        <span className="flex-shrink mx-2 text-gray-400 text-[10px] uppercase font-bold">Or</span>
+                        <div className="flex-grow border-t border-blue-200/60"></div>
+                      </div>
+
+                      {/* Option 2: Google Maps Link */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-bold text-gray-800">
+                            Choose from Google Maps (Share Link)
+                          </span>
+                          <a
+                            href={buildGoogleMapsSearchUrl(shopName, { line1: addressLine1, line2: addressLine2 })}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[11px] font-bold text-blue-600 hover:text-blue-800 underline transition-colors"
+                          >
+                            Find Shop on Google Maps ↗
+                          </a>
+                        </div>
+                        <input
+                          type="url"
+                          placeholder="Paste link (e.g. https://maps.app.goo.gl/...)"
+                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-xs sm:text-sm transition-all text-gray-800"
+                          value={googleMapsUrl}
+                          onChange={(e) => handleGoogleMapsUrlChange(e.target.value)}
+                        />
+                        <p className="text-[10px] text-gray-500 mt-1">
+                          Open Google Maps app, search your shop, tap &quot;Share&quot;, copy link, and paste here.
+                        </p>
+                      </div>
+
+                      {/* Preview Button */}
+                      {(isValidCoordinates(coordinates) || googleMapsUrl) && (
+                        <div className="pt-1">
+                          <a
+                            href={generateGoogleMapsDirectionsUrl({
+                              name: shopName,
+                              address: { line1: addressLine1, line2: addressLine2 },
+                              coordinates,
+                              googleMapsUrl,
+                            })}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-900 bg-white hover:bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-200 transition-colors shadow-2xs"
+                          >
+                            <span>🗺️ Preview Navigation on Google Maps ↗</span>
+                          </a>
+                        </div>
+                      )}
                     </div>
 
                     {/* Starting Service Price (₹) with 1-Tap Chips */}

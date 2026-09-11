@@ -40,6 +40,20 @@ export async function POST(req: Request) {
     const addressLine2 = (formData.get("addressLine2") as string)?.trim();
     const referralPhone = (formData.get("referralPhone") as string)?.trim();
     const imageFile = formData.get("image") as File | null;
+    const googleMapsUrl = (formData.get("googleMapsUrl") as string)?.trim() || "";
+    const coordinatesRaw = formData.get("coordinates") as string | null;
+
+    let coordinates: { lat?: number; lng?: number } | undefined = undefined;
+    if (coordinatesRaw) {
+      try {
+        const parsed = JSON.parse(coordinatesRaw);
+        if (typeof parsed?.lat === "number" && typeof parsed?.lng === "number") {
+          coordinates = { lat: parsed.lat, lng: parsed.lng };
+        }
+      } catch (e) {
+        // ignore invalid JSON
+      }
+    }
 
     // Basic validation
     if (!name || !ownerName || !email || !phone || !password) {
@@ -149,6 +163,8 @@ export async function POST(req: Request) {
       slots_booked: {},
       availableSlots: ["11:00 AM", "03:00 PM", "06:30 PM"],
       closedDays: [],
+      coordinates,
+      googleMapsUrl,
     });
 
     // Link Referral if referralPhone was provided
