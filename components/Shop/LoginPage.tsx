@@ -55,7 +55,8 @@ const LoginUser = () => {
   // Photo state
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement | null>(null);
 
   // Common UI States
   const [showPassword, setShowPassword] = useState(true); // Default to visible for easy typing
@@ -981,40 +982,88 @@ const LoginUser = () => {
                             <p className="text-xs text-emerald-700 font-semibold mt-0.5 flex items-center gap-1">
                               <span>✓ Photo looks great!</span>
                             </p>
-                            <button
-                              type="button"
-                              onClick={() => fileInputRef.current?.click()}
-                              className="mt-1.5 inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 underline cursor-pointer"
-                            >
-                              <span>Take another photo</span>
-                            </button>
+                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => galleryInputRef.current?.click()}
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl border border-indigo-200 transition-colors cursor-pointer"
+                              >
+                                <span>🖼️ Pick from Gallery</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => cameraInputRef.current?.click()}
+                                className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl border border-blue-200 transition-colors cursor-pointer"
+                              >
+                                <span>📷 Retake Live Photo</span>
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ) : (
-                        /* Big Clickable Camera Card */
-                        <div
-                          onClick={() => fileInputRef.current?.click()}
-                          className="border-2 border-dashed border-blue-300 hover:border-blue-500 bg-blue-50/40 hover:bg-blue-50/80 p-6 sm:p-8 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-[0.99] group shadow-2xs"
-                        >
-                          <div className="w-16 h-16 rounded-2xl bg-blue-100 group-hover:bg-blue-200 text-blue-600 flex items-center justify-center text-3xl mb-3 shadow-inner transition-colors">
-                            📷
+                        /* Two Large Options: Choose from Gallery & Take Live Photo */
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {/* Option 1: Gallery / Saved Photos */}
+                          <div
+                            onClick={() => galleryInputRef.current?.click()}
+                            className="border-2 border-dashed border-indigo-300 hover:border-indigo-500 bg-indigo-50/40 hover:bg-indigo-50/80 p-5 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-[0.98] group shadow-2xs"
+                          >
+                            <div className="w-14 h-14 rounded-2xl bg-indigo-100 group-hover:bg-indigo-200 text-indigo-600 flex items-center justify-center text-2xl mb-2.5 shadow-inner transition-colors">
+                              🖼️
+                            </div>
+                            <p className="text-sm font-bold text-gray-900">
+                              Choose from Gallery
+                            </p>
+                            <p className="text-[11px] text-gray-500 mt-0.5">
+                              Upload a photo already saved in your phone or WhatsApp
+                            </p>
+                            <span className="mt-3 inline-flex items-center gap-1 bg-indigo-600 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow-xs">
+                              <span>Open Phone Gallery</span>
+                            </span>
                           </div>
-                          <p className="text-base font-bold text-gray-900">
-                            Tap here to Take a Photo of Your Shop
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1 max-w-xs">
-                            Opens your phone camera or gallery. Show the front
-                            signboard or inside chairs.
-                          </p>
-                          <span className="mt-3 inline-flex items-center gap-1.5 bg-blue-600 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-xs">
-                            <span>Open Camera / Gallery</span>
-                          </span>
+
+                          {/* Option 2: Live Camera */}
+                          <div
+                            onClick={() => cameraInputRef.current?.click()}
+                            className="border-2 border-dashed border-blue-300 hover:border-blue-500 bg-blue-50/40 hover:bg-blue-50/80 p-5 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-[0.98] group shadow-2xs"
+                          >
+                            <div className="w-16 h-14 rounded-2xl bg-blue-100 group-hover:bg-blue-200 text-blue-600 flex items-center justify-center text-2xl mb-2.5 shadow-inner transition-colors">
+                              📷
+                            </div>
+                            <p className="text-sm font-bold text-gray-900">
+                              Take Live Photo
+                            </p>
+                            <p className="text-[11px] text-gray-500 mt-0.5">
+                              Take a fresh photo right now using your camera
+                            </p>
+                            <span className="mt-3 inline-flex items-center gap-1 bg-blue-600 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl shadow-xs">
+                              <span>Open Camera</span>
+                            </span>
+                          </div>
                         </div>
                       )}
 
-                      {/* Hidden File Input */}
+                      {/* Hidden File Input for Gallery (no capture attribute so gallery/files open) */}
                       <input
-                        ref={fileInputRef}
+                        ref={galleryInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0] || null;
+                          setImageFile(file);
+                          if (file) {
+                            setImagePreview(URL.createObjectURL(file));
+                            setError("");
+                          } else {
+                            setImagePreview(null);
+                          }
+                        }}
+                        className="hidden"
+                      />
+
+                      {/* Hidden File Input for Camera (capture="environment" launches camera) */}
+                      <input
+                        ref={cameraInputRef}
                         type="file"
                         accept="image/*"
                         capture="environment"
@@ -1117,7 +1166,7 @@ const LoginUser = () => {
                             <span>Creating Shop...</span>
                           </>
                         ) : (
-                          <span>🎉 Register & Open Shop</span>
+                          <span>Register & Open Shop</span>
                         )}
                       </button>
                     </div>
