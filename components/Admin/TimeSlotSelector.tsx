@@ -4,12 +4,14 @@ interface TimeSlotSelectorProps {
   selectedSlots: string[];
   onChange: (slots: string[]) => void;
   hideLabel?: boolean;
+  disabled?: boolean;
 }
 
 const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
   selectedSlots,
   onChange,
   hideLabel = false,
+  disabled = false,
 }) => {
   // Generate time slots from 9:00 AM to 9:00 PM with 30 min intervals
   const generateTimeSlots = () => {
@@ -54,8 +56,11 @@ const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
           <button
             key={slot}
             type="button"
-            onClick={() => toggleSlot(slot)}
-            className={`px-4 cursor-pointer py-2 rounded-full text-sm font-medium transition-all border ${
+            disabled={disabled}
+            onClick={() => !disabled && toggleSlot(slot)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+              disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"
+            } ${
               selectedSlots.includes(slot)
                 ? "bg-blue-500 text-white border-blue-500 shadow-sm"
                 : "bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:bg-blue-50"
